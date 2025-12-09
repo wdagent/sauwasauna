@@ -2660,6 +2660,13 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         if (!dayData || !dayData.slots || dayData.slots.length === 0) {
           empty?.classList.remove('hidden');
           this.state.daySlots = [];
+
+          // WDA-1011: Clear container HTML to prevent stale slots from previous date
+          // Root cause: Early return didn't clean DOM - users saw previous day's slots behind "No slots available"
+          if (container) {
+            container.innerHTML = '';
+          }
+
           return;
         }
 
@@ -2670,6 +2677,11 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
       } catch (error) {
         console.error('[BookingWidget] Error loading slots:', error);
         empty?.classList.remove('hidden');
+
+        // WDA-1011: Clear container HTML in error case too
+        if (container) {
+          container.innerHTML = '';
+        }
       } finally {
         loading?.classList.add('hidden');
       }
