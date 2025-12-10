@@ -2682,6 +2682,16 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         if (container) {
           container.innerHTML = '';
         }
+
+        // WDA-1012 Frontend Workaround: Remove green dot from calendar day when getDaySlots fails
+        // Backend inconsistency: getAvailableDates marks day as available but getDaySlots returns Error 500
+        // This prevents users from clicking on broken days
+        const calendarDay = this.widget.querySelector(`button[data-date="${date}"]`) as HTMLButtonElement;
+        if (calendarDay) {
+          calendarDay.classList.remove('available');
+          calendarDay.disabled = true;
+          console.warn(`[BookingWidget] WDA-1012: Removed 'available' class from ${date} due to getDaySlots error`);
+        }
       } finally {
         loading?.classList.add('hidden');
       }
