@@ -1,0 +1,176 @@
+---
+/**
+ * DiscountErrorMessage Component
+ * WDA-1022: Error/warning/info message display for discount validation
+ *
+ * Renders styled message based on error type and severity.
+ * Supports error (red), warning (orange), and info (blue) severities.
+ */
+
+import type { DiscountErrorType } from '../../types/discount-errors';
+import { getErrorConfig } from '../../types/discount-errors';
+
+export interface Props {
+  errorType: DiscountErrorType;
+  class?: string;
+}
+
+const { errorType, class: className = '' } = Astro.props;
+
+const config = getErrorConfig(errorType);
+
+// Map severity to CSS modifier class
+const severityClass = `discount-error-message--${config.severity}`;
+
+// Map icon name to SVG path
+const iconPaths: Record<string, string> = {
+  'x-circle': 'M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z',
+  'clock': 'M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z',
+  'ban': 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z',
+  'user-x': 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4zm6-6l2.12-2.12-1.41-1.41L16.59 6.59 14.47 4.47l-1.41 1.41L15.18 8l-2.12 2.12 1.41 1.41 2.12-2.12 2.12 2.12 1.41-1.41L18 8z',
+  'pause-circle': 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z',
+  'wifi-off': 'M22.99 9C19.15 5.16 13.8 3.76 8.84 4.78l2.52 2.52c3.47-.17 6.99 1.05 9.63 3.7l2-2zm-4 4c-1.29-1.29-2.84-2.13-4.49-2.56l3.53 3.53.96-.97zM2 3.05L5.07 6.1C3.6 6.82 2.22 7.78 1 9l1.99 2c1.24-1.24 2.67-2.16 4.2-2.77l2.24 2.24C7.81 10.89 6.27 11.73 5 13v.01L6.99 15c1.36-1.36 3.14-2.04 4.92-2.06L18.98 20l1.27-1.26L3.29 1.79 2 3.05zM9 17l3 3 3-3c-1.65-1.66-4.34-1.66-6 0z',
+  'alert-triangle': 'M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z',
+};
+
+const iconPath = iconPaths[config.icon] || iconPaths['alert-triangle'];
+---
+
+<div
+  class={`discount-error-message ${severityClass} ${className}`}
+  role="alert"
+  aria-live="assertive"
+  data-discount-error-message
+>
+  <div class="message-icon" aria-hidden="true">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path d={iconPath} />
+    </svg>
+  </div>
+  <div class="message-content">
+    <p class="message-title">{config.title}</p>
+    <p class="message-description">{config.description}</p>
+  </div>
+</div>
+
+<style>
+  .discount-error-message {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-4);
+    border-radius: var(--radius-base);
+    border-left-width: 4px;
+    border-left-style: solid;
+    margin-top: var(--spacing-3);
+    animation: slide-down 0.25s ease-out forwards;
+  }
+
+  .message-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .message-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .message-title {
+    margin: 0 0 var(--spacing-1);
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-sm);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+  }
+
+  .message-description {
+    margin: 0;
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-xs);
+    line-height: var(--line-height-normal);
+    opacity: 0.9;
+  }
+
+  /* Error severity - Red */
+  .discount-error-message--error {
+    background-color: rgba(244, 67, 54, 0.1);
+    border-left-color: var(--color-error);
+    color: #b91c1c;
+  }
+
+  .discount-error-message--error .message-icon {
+    color: var(--color-error);
+  }
+
+  /* Warning severity - Orange */
+  .discount-error-message--warning {
+    background-color: rgba(255, 152, 0, 0.1);
+    border-left-color: var(--color-warning);
+    color: #b45309;
+  }
+
+  .discount-error-message--warning .message-icon {
+    color: var(--color-warning);
+  }
+
+  /* Info severity - Blue */
+  .discount-error-message--info {
+    background-color: rgba(33, 150, 243, 0.1);
+    border-left-color: var(--color-info);
+    color: #1e40af;
+  }
+
+  .discount-error-message--info .message-icon {
+    color: var(--color-info);
+  }
+
+  /* Animation keyframe (fallback) */
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .discount-error-message {
+      animation: none;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 767px) {
+    .discount-error-message {
+      padding: var(--spacing-2) var(--spacing-3);
+      gap: var(--spacing-2);
+    }
+
+    .message-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .message-title {
+      font-size: var(--font-scale-xs);
+    }
+
+    .message-description {
+      font-size: var(--font-scale-xxs);
+    }
+  }
+</style>

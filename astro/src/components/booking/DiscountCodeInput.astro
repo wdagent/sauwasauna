@@ -1,0 +1,676 @@
+---
+/**
+ * DiscountCodeInput Component
+ * WDA-1022: Main discount code input with validation and visual feedback
+ *
+ * 8 Visual States:
+ * 1. Empty (placeholder, button disabled)
+ * 2. Typing (blue border, button enabled)
+ * 3. Validating (loading spinner, input disabled)
+ * 4. Valid (green border, shows DiscountBadge)
+ * 5. Invalid (red border, shake animation, error message)
+ * 6. Expired (orange border, warning message)
+ * 7. No uses left (red border, exhausted message)
+ * 8. Already used (amber border, info message)
+ */
+
+export interface Props {
+  sessionPrice: number;
+  locale?: 'es' | 'ca' | 'en' | 'fr';
+}
+
+const { sessionPrice, locale = 'es' } = Astro.props;
+
+// Translations
+const translations = {
+  es: {
+    label: 'Tienes un codigo de descuento?',
+    placeholder: 'Ingresa tu codigo',
+    apply: 'Aplicar',
+    applying: 'Validando...',
+  },
+  ca: {
+    label: 'Tens un codi de descompte?',
+    placeholder: 'Introdueix el teu codi',
+    apply: 'Aplicar',
+    applying: 'Validant...',
+  },
+  en: {
+    label: 'Do you have a discount code?',
+    placeholder: 'Enter your code',
+    apply: 'Apply',
+    applying: 'Validating...',
+  },
+  fr: {
+    label: 'Avez-vous un code de reduction?',
+    placeholder: 'Entrez votre code',
+    apply: 'Appliquer',
+    applying: 'Validation...',
+  },
+};
+
+const t = translations[locale] || translations.es;
+---
+
+<div
+  class="discount-code-section"
+  data-discount-input
+  data-session-price={sessionPrice}
+  data-locale={locale}
+>
+  <label class="discount-label">
+    <span class="discount-icon" aria-hidden="true">&#127991;</span>
+    <span class="discount-label-text">{t.label}</span>
+  </label>
+
+  <div class="discount-input-group" data-input-group>
+    <input
+      type="text"
+      class="discount-input"
+      maxlength="20"
+      placeholder={t.placeholder}
+      aria-label="Codigo de descuento"
+      autocomplete="off"
+      autocapitalize="characters"
+      spellcheck="false"
+      data-discount-code-input
+    />
+    <button
+      type="button"
+      class="discount-apply-btn"
+      disabled
+      data-discount-apply-btn
+    >
+      <span class="btn-text">{t.apply}</span>
+      <span class="btn-loading hidden">
+        <span class="discount-spinner" aria-hidden="true"></span>
+        <span class="sr-only">{t.applying}</span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Badge container (shown when valid) -->
+  <div class="discount-badge-container hidden" data-discount-badge-container></div>
+
+  <!-- Error/Success messages -->
+  <div class="discount-message hidden" data-discount-message role="status" aria-live="polite"></div>
+</div>
+
+<style>
+  .discount-code-section {
+    margin-top: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+  }
+
+  .discount-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-bg-white);
+    cursor: default;
+  }
+
+  .discount-icon {
+    font-size: 1.125rem;
+  }
+
+  .discount-label-text {
+    opacity: 0.9;
+  }
+
+  .discount-input-group {
+    display: flex;
+    gap: var(--spacing-2);
+    border-radius: var(--radius-base);
+    transition: border-color var(--transition-base);
+  }
+
+  .discount-input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--spacing-3) var(--spacing-4);
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--input-text);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
+    background-color: var(--input-bg);
+    border: var(--border-width-base) solid var(--input-border);
+    border-radius: var(--radius-base);
+    transition: all var(--transition-base);
+    min-height: var(--input-height);
+  }
+
+  .discount-input::placeholder {
+    color: var(--input-placeholder);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--font-weight-regular);
+  }
+
+  .discount-input:focus {
+    outline: none;
+    background-color: var(--input-bg-focus);
+    border-color: var(--color-info);
+  }
+
+  .discount-input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Input states */
+  .discount-input.input-typing {
+    border-color: var(--color-info);
+    background-color: var(--input-bg-focus);
+  }
+
+  .discount-input.input-valid {
+    border-color: var(--color-success);
+  }
+
+  .discount-input.input-invalid {
+    border-color: var(--color-error);
+  }
+
+  .discount-input.input-expired {
+    border-color: var(--color-warning);
+  }
+
+  .discount-input.input-no-uses {
+    border-color: var(--color-error);
+  }
+
+  .discount-input.input-already-used {
+    border-color: #f59e0b;
+  }
+
+  .discount-input.animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .discount-apply-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    min-height: 44px;
+    padding: var(--spacing-3) var(--spacing-5);
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-bg-white);
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-base);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+  }
+
+  .discount-apply-btn:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+  }
+
+  .discount-apply-btn:focus {
+    outline: none;
+  }
+
+  .discount-apply-btn:focus-visible {
+    outline: 2px solid var(--color-bg-white);
+    outline-offset: 2px;
+  }
+
+  .discount-apply-btn:disabled {
+    opacity: var(--opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  .btn-text,
+  .btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+  }
+
+  .btn-loading.hidden,
+  .btn-text.hidden {
+    display: none;
+  }
+
+  .discount-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .discount-badge-container {
+    margin-top: var(--spacing-3);
+  }
+
+  .discount-badge-container.hidden {
+    display: none;
+  }
+
+  .discount-message {
+    margin-top: var(--spacing-2);
+  }
+
+  .discount-message.hidden {
+    display: none;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Keyframes */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+    20%, 40%, 60%, 80% { transform: translateX(4px); }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .discount-input.animate-shake,
+    .discount-spinner {
+      animation: none;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 767px) {
+    .discount-input-group {
+      flex-direction: column;
+    }
+
+    .discount-apply-btn {
+      width: 100%;
+      min-height: 48px;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * DiscountCodeInput Client-Side Logic
+   * Handles input, validation, and state management with nanostores
+   */
+
+  import {
+    discountCode,
+    discountState,
+    appliedDiscount,
+    discountError,
+    setDiscountCode,
+    setValidating,
+    setValid,
+    setError,
+    clearDiscount,
+    validateCodeFormat,
+    revalidateStoredDiscount,
+  } from '../../stores';
+  import type { DiscountState } from '../../types/discount';
+  import type { DiscountErrorType } from '../../types/discount-errors';
+  import { ERROR_MESSAGES } from '../../types/discount-errors';
+  import { validateDiscountCode } from '../../lib/graphql/queries/validateDiscountCode';
+
+  function initDiscountCodeInput(container: HTMLElement) {
+    const input = container.querySelector('[data-discount-code-input]') as HTMLInputElement;
+    const applyBtn = container.querySelector('[data-discount-apply-btn]') as HTMLButtonElement;
+    const btnText = applyBtn?.querySelector('.btn-text') as HTMLElement;
+    const btnLoading = applyBtn?.querySelector('.btn-loading') as HTMLElement;
+    const inputGroup = container.querySelector('[data-input-group]') as HTMLElement;
+    const badgeContainer = container.querySelector('[data-discount-badge-container]') as HTMLElement;
+    const messageContainer = container.querySelector('[data-discount-message]') as HTMLElement;
+
+    const sessionPrice = parseInt(container.dataset.sessionPrice || '0', 10);
+
+    if (!input || !applyBtn) return;
+
+    // Revalidate stored discount on init
+    revalidateStoredDiscount();
+
+    // Check if there's already an applied discount
+    const initialDiscount = appliedDiscount.get();
+    if (initialDiscount) {
+      showBadge(initialDiscount.code, initialDiscount.percentage);
+      hideInput();
+    }
+
+    // Subscribe to store changes
+    discountState.subscribe((state: DiscountState) => {
+      updateUIState(state);
+    });
+
+    discountError.subscribe((error: DiscountErrorType | null) => {
+      if (error) {
+        showErrorMessage(error);
+      } else {
+        hideMessage();
+      }
+    });
+
+    appliedDiscount.subscribe((discount) => {
+      if (discount) {
+        showBadge(discount.code, discount.percentage);
+        hideInput();
+      } else {
+        hideBadge();
+        showInput();
+      }
+    });
+
+    // Input event handlers
+    input.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const value = target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      target.value = value;
+      setDiscountCode(value);
+      updateButtonState(value);
+      updateInputVisualState(value);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !applyBtn.disabled) {
+        e.preventDefault();
+        handleApply();
+      }
+      if (e.key === 'Escape') {
+        input.value = '';
+        setDiscountCode('');
+        updateButtonState('');
+        input.blur();
+      }
+    });
+
+    applyBtn.addEventListener('click', handleApply);
+
+    async function handleApply() {
+      const code = discountCode.get();
+
+      if (!code || !validateCodeFormat(code)) {
+        setError('INVALID_CODE');
+        input.classList.add('animate-shake');
+        setTimeout(() => input.classList.remove('animate-shake'), 500);
+        return;
+      }
+
+      setValidating();
+      setButtonLoading(true);
+      input.disabled = true;
+
+      try {
+        const result = await validateDiscountCode(code, sessionPrice);
+
+        if (result.valid && result.discount) {
+          // Map response to store format
+          setValid({
+            id: result.discount.code,
+            code: result.discount.code,
+            percentage: result.discount.percentage,
+            valid_until: result.discount.validUntil,
+            usage_limit: result.discount.usageLimit,
+            usage_count: result.discount.usageCount,
+            is_active: result.discount.isActive,
+            one_per_user: false, // Default, backend doesn't return this
+          });
+        } else if (result.error) {
+          // Map error type
+          const errorType = mapErrorType(result.error);
+          setError(errorType);
+          input.classList.add('animate-shake');
+          setTimeout(() => input.classList.remove('animate-shake'), 500);
+        }
+      } catch (err) {
+        console.error('[DiscountCodeInput] Validation error:', err);
+        setError('NETWORK_ERROR');
+      } finally {
+        setButtonLoading(false);
+        input.disabled = false;
+      }
+    }
+
+    function mapErrorType(error: string): DiscountErrorType {
+      const errorMap: Record<string, DiscountErrorType> = {
+        'INVALID_CODE': 'INVALID_CODE',
+        'INACTIVE': 'INACTIVE',
+        'EXPIRED': 'EXPIRED',
+        'NO_USES_LEFT': 'NO_USES_LEFT',
+        'NETWORK_ERROR': 'NETWORK_ERROR',
+        'UNKNOWN_ERROR': 'VALIDATION_ERROR',
+      };
+      return errorMap[error] || 'VALIDATION_ERROR';
+    }
+
+    function updateButtonState(value: string) {
+      const isValid = value.length >= 4;
+      applyBtn.disabled = !isValid;
+    }
+
+    function updateInputVisualState(value: string) {
+      // Remove all state classes
+      input.classList.remove(
+        'input-typing',
+        'input-valid',
+        'input-invalid',
+        'input-expired',
+        'input-no-uses',
+        'input-already-used'
+      );
+
+      if (value.length > 0) {
+        input.classList.add('input-typing');
+      }
+    }
+
+    function updateUIState(state: DiscountState) {
+      input.classList.remove(
+        'input-typing',
+        'input-valid',
+        'input-invalid',
+        'input-expired',
+        'input-no-uses',
+        'input-already-used'
+      );
+
+      switch (state) {
+        case 'validating':
+          input.classList.add('input-typing');
+          break;
+        case 'valid':
+          input.classList.add('input-valid');
+          break;
+        case 'error':
+          const error = discountError.get();
+          if (error === 'EXPIRED') {
+            input.classList.add('input-expired');
+          } else if (error === 'NO_USES_LEFT') {
+            input.classList.add('input-no-uses');
+          } else if (error === 'ALREADY_USED') {
+            input.classList.add('input-already-used');
+          } else {
+            input.classList.add('input-invalid');
+          }
+          break;
+      }
+    }
+
+    function setButtonLoading(loading: boolean) {
+      if (loading) {
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        applyBtn.disabled = true;
+      } else {
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
+      }
+    }
+
+    function showBadge(code: string, percentage: number) {
+      badgeContainer.innerHTML = `
+        <div class="discount-badge" data-discount-badge>
+          <div class="badge-content">
+            <span class="badge-icon" aria-hidden="true">&#127991;</span>
+            <span class="badge-code">${code}</span>
+            <span class="badge-percentage">(${percentage}% OFF)</span>
+          </div>
+          <button
+            type="button"
+            class="badge-remove-btn"
+            aria-label="Quitar codigo de descuento"
+            data-discount-remove-btn
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      `;
+      badgeContainer.classList.remove('hidden');
+
+      // Add badge styles inline for dynamic rendering
+      const badge = badgeContainer.querySelector('.discount-badge') as HTMLElement;
+      if (badge) {
+        badge.style.cssText = `
+          display: inline-flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: var(--spacing-3);
+          background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+          color: white;
+          border-radius: 9999px;
+          padding: 8px 16px;
+          font-family: var(--font-family-secondary);
+          font-size: 14px;
+          font-weight: 600;
+          animation: fade-in-scale 0.2s ease-out forwards;
+        `;
+      }
+
+      const badgeContent = badge?.querySelector('.badge-content') as HTMLElement;
+      if (badgeContent) {
+        badgeContent.style.cssText = `
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        `;
+      }
+
+      const removeBtn = badge?.querySelector('.badge-remove-btn') as HTMLElement;
+      if (removeBtn) {
+        removeBtn.style.cssText = `
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 44px;
+          height: 44px;
+          padding: 0;
+          margin: -10px -8px -10px 0;
+          background: transparent;
+          border: none;
+          border-radius: 50%;
+          color: white;
+          cursor: pointer;
+          opacity: 0.8;
+        `;
+
+        removeBtn.addEventListener('click', () => {
+          badge.style.animation = 'fade-out-scale 0.2s ease-in forwards';
+          setTimeout(() => {
+            clearDiscount();
+          }, 200);
+        });
+      }
+    }
+
+    function hideBadge() {
+      badgeContainer.innerHTML = '';
+      badgeContainer.classList.add('hidden');
+    }
+
+    function hideInput() {
+      inputGroup.style.display = 'none';
+    }
+
+    function showInput() {
+      inputGroup.style.display = '';
+      input.value = '';
+      updateButtonState('');
+    }
+
+    function showErrorMessage(errorType: DiscountErrorType) {
+      const config = ERROR_MESSAGES[errorType];
+      if (!config) return;
+
+      const severityColors: Record<string, { bg: string; border: string; text: string }> = {
+        error: { bg: 'rgba(244, 67, 54, 0.1)', border: '#f44336', text: '#b91c1c' },
+        warning: { bg: 'rgba(255, 152, 0, 0.1)', border: '#ff9800', text: '#b45309' },
+        info: { bg: 'rgba(33, 150, 243, 0.1)', border: '#2196f3', text: '#1e40af' },
+      };
+
+      const colors = severityColors[config.severity] || severityColors.error;
+
+      messageContainer.innerHTML = `
+        <div style="
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 12px 16px;
+          border-radius: 8px;
+          border-left: 4px solid ${colors.border};
+          background-color: ${colors.bg};
+          color: ${colors.text};
+          animation: slide-down 0.25s ease-out forwards;
+        ">
+          <div style="flex: 1;">
+            <p style="margin: 0 0 4px; font-size: 14px; font-weight: 600;">${config.title}</p>
+            <p style="margin: 0; font-size: 12px; opacity: 0.9;">${config.description}</p>
+          </div>
+        </div>
+      `;
+      messageContainer.classList.remove('hidden');
+    }
+
+    function hideMessage() {
+      messageContainer.innerHTML = '';
+      messageContainer.classList.add('hidden');
+    }
+  }
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const containers = document.querySelectorAll('[data-discount-input]');
+    containers.forEach((container) => initDiscountCodeInput(container as HTMLElement));
+  });
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    const containers = document.querySelectorAll('[data-discount-input]');
+    containers.forEach((container) => initDiscountCodeInput(container as HTMLElement));
+  });
+</script>

@@ -1,0 +1,224 @@
+---
+/**
+ * DiscountBadge Component
+ * WDA-1022: Visual badge showing applied discount code
+ *
+ * Displays the applied discount code with percentage and remove button.
+ * Uses gradient background and fade animations.
+ */
+
+export interface Props {
+  code: string;
+  percentage: number;
+  amount?: number;
+}
+
+const { code, percentage, amount } = Astro.props;
+---
+
+<div class="discount-badge" data-discount-badge>
+  <div class="badge-content">
+    <span class="badge-icon" aria-hidden="true">&#127991;</span>
+    <span class="badge-code">{code}</span>
+    <span class="badge-percentage">({percentage}% OFF)</span>
+  </div>
+  <button
+    type="button"
+    class="badge-remove-btn"
+    aria-label="Quitar codigo de descuento"
+    data-discount-remove-btn
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .discount-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-3);
+    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    color: var(--color-bg-white);
+    border-radius: var(--radius-full);
+    padding: var(--spacing-2) var(--spacing-4);
+    font-family: var(--font-family-secondary);
+    font-size: var(--font-scale-sm);
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-sm);
+    animation: fade-in-scale 0.2s ease-out forwards;
+    max-width: 100%;
+  }
+
+  .badge-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .badge-icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+
+  .badge-code {
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .badge-percentage {
+    font-weight: var(--font-weight-medium);
+    opacity: 0.9;
+    white-space: nowrap;
+  }
+
+  .badge-remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    margin: -10px -8px -10px 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-full);
+    color: var(--color-bg-white);
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .badge-remove-btn:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .badge-remove-btn:focus {
+    outline: none;
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+
+  .badge-remove-btn:focus-visible {
+    outline: 2px solid var(--color-bg-white);
+    outline-offset: 2px;
+  }
+
+  .badge-remove-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Removing state */
+  .discount-badge.removing {
+    animation: fade-out-scale 0.2s ease-in forwards;
+  }
+
+  /* Animation keyframes (fallback if not imported) */
+  @keyframes fade-in-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fade-out-scale {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .discount-badge,
+    .discount-badge.removing {
+      animation: none;
+    }
+
+    .discount-badge.removing {
+      opacity: 0;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 767px) {
+    .discount-badge {
+      padding: var(--spacing-2) var(--spacing-3);
+      font-size: var(--font-scale-xs);
+    }
+
+    .badge-icon {
+      font-size: 0.875rem;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * DiscountBadge Client-Side Logic
+   * Handles remove button click with animation
+   */
+
+  import { clearDiscount } from '../../stores';
+
+  function initDiscountBadge(badge: HTMLElement) {
+    const removeBtn = badge.querySelector('[data-discount-remove-btn]');
+
+    if (!removeBtn) return;
+
+    removeBtn.addEventListener('click', () => {
+      // Add removing class for animation
+      badge.classList.add('removing');
+
+      // Wait for animation to complete
+      setTimeout(() => {
+        clearDiscount();
+      }, 200);
+    });
+  }
+
+  // Initialize on DOM ready
+  document.addEventListener('DOMContentLoaded', () => {
+    const badges = document.querySelectorAll('[data-discount-badge]');
+    badges.forEach((badge) => initDiscountBadge(badge as HTMLElement));
+  });
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    const badges = document.querySelectorAll('[data-discount-badge]');
+    badges.forEach((badge) => initDiscountBadge(badge as HTMLElement));
+  });
+</script>

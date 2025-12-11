@@ -1,0 +1,216 @@
+/* ==========================================================================
+   SAUWA Discount Code Animations
+   WDA-1022: CSS animations for discount code input system
+
+   Fecha creacion: 2025-12-11
+   Version: 1.0.0
+   ========================================================================== */
+
+/* ==========================================================================
+   KEYFRAMES - Animation definitions
+   ========================================================================== */
+
+/* Shake animation for invalid input */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+/* Fade in with scale for badge appearance */
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Fade out with scale for badge removal */
+@keyframes fade-out-scale {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Pulse animation for loading state */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Slide down for message appearance */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner rotation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   ANIMATION CLASSES - Utility classes
+   ========================================================================== */
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fade-in-scale 0.2s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: fade-out-scale 0.2s ease-in forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 1.5s ease-in-out infinite;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.25s ease-out forwards;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* ==========================================================================
+   DISCOUNT INPUT STATES - Border colors for different states
+   ========================================================================== */
+
+/* Idle state - default */
+.discount-input--idle {
+  border-color: var(--border-color-light);
+}
+
+/* Typing state - blue border */
+.discount-input--typing {
+  border-color: var(--color-info);
+  background-color: var(--input-bg-focus);
+}
+
+/* Validating state - loading pulse */
+.discount-input--validating {
+  border-color: var(--color-info);
+  pointer-events: none;
+}
+
+.discount-input--validating input {
+  opacity: 0.7;
+}
+
+/* Valid state - green border */
+.discount-input--valid {
+  border-color: var(--color-success);
+}
+
+/* Invalid/Error state - red border with shake */
+.discount-input--invalid {
+  border-color: var(--color-error);
+}
+
+/* Expired state - orange border */
+.discount-input--expired {
+  border-color: var(--color-warning);
+}
+
+/* No uses left state - red border */
+.discount-input--no-uses {
+  border-color: var(--color-error);
+}
+
+/* Already used state - amber/warning border */
+.discount-input--already-used {
+  border-color: #f59e0b; /* amber-500 */
+}
+
+/* ==========================================================================
+   DISCOUNT BADGE ANIMATIONS
+   ========================================================================== */
+
+.discount-badge {
+  animation: fade-in-scale 0.2s ease-out forwards;
+}
+
+.discount-badge--removing {
+  animation: fade-out-scale 0.2s ease-in forwards;
+}
+
+/* ==========================================================================
+   MESSAGE ANIMATIONS
+   ========================================================================== */
+
+.discount-message--show {
+  animation: slide-down 0.25s ease-out forwards;
+}
+
+.discount-message--hide {
+  animation: fade-out-scale 0.15s ease-in forwards;
+}
+
+/* ==========================================================================
+   LOADING SPINNER - Inline small spinner
+   ========================================================================== */
+
+.discount-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.discount-spinner--dark {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: var(--color-primary);
+}
+
+/* ==========================================================================
+   REDUCED MOTION - Accessibility
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake,
+  .animate-fade-in,
+  .animate-fade-out,
+  .animate-pulse-subtle,
+  .animate-slide-down,
+  .animate-spin,
+  .discount-spinner,
+  .discount-badge,
+  .discount-badge--removing,
+  .discount-message--show,
+  .discount-message--hide {
+    animation: none;
+  }
+
+  /* Instant state changes instead of animations */
+  .discount-badge--removing {
+    opacity: 0;
+  }
+
+  .discount-message--show {
+    opacity: 1;
+    transform: none;
+  }
+}
