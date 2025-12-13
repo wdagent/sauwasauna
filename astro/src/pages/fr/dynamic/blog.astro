@@ -1,0 +1,112 @@
+---
+/**
+ * WDA-1032: Dynamic Blog Post Page (FR)
+ * Catch-all fallback for blog post URLs not generated at build time
+ */
+import Layout from '../../../layouts/Layout.astro';
+import FooterBlack from '../../../components/layout/FooterBlack.astro';
+import BlogPostSkeleton from '../../../components/core/skeletons/BlogPostSkeleton.astro';
+
+const locale = 'fr';
+
+const i18n = {
+  pageTitle: 'Chargement de l\'article... | SAUWA SAUNA',
+  metaDescription: 'Chargement de l\'article du blog SAUWA.',
+  notFoundTitle: 'Article non trouve',
+  notFoundMessage: 'L\'article que vous recherchez n\'existe pas ou a ete supprime.',
+  backHome: 'Retour a l\'accueil',
+  backBlog: 'Retour au blog',
+};
+---
+
+<Layout title={i18n.pageTitle} description={i18n.metaDescription} lang={locale} pageType="blog-post" navbar="none">
+  <main class="dynamic-blog-page" data-page-type="dynamic-blog" data-locale={locale}>
+    <div data-loader-skeleton class="loader__skeleton">
+      <BlogPostSkeleton showHero={true} showContent={true} />
+    </div>
+    <div data-loader-content class="loader__content hidden"></div>
+    <div data-loader-notfound class="loader__notfound hidden">
+      <div class="notfound-container">
+        <h1 class="notfound-title">404</h1>
+        <h2 class="notfound-heading">{i18n.notFoundTitle}</h2>
+        <p class="notfound-message">{i18n.notFoundMessage}</p>
+        <div class="notfound-buttons">
+          <a href={`/${locale}/guia-sauwa-sauna/`} class="notfound-btn notfound-btn--secondary">{i18n.backBlog}</a>
+          <a href={`/${locale}/`} class="notfound-btn">{i18n.backHome}</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <FooterBlack locale={locale} />
+</Layout>
+
+<script>
+  import { blogPostSlugExists, fetchBlogPostBySlug, type Locale } from '../../../lib/dynamic-content-client';
+  import { renderBlogPost } from '../../../lib/dynamic-renderers';
+
+  async function initDynamicBlog() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+    const locale = (document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'fr') as Locale;
+    const notFoundUrl = `/${locale}/404/`;
+    const skeletonEl = document.querySelector('[data-loader-skeleton]');
+    const contentEl = document.querySelector('[data-loader-content]');
+    const notFoundEl = document.querySelector('[data-loader-notfound]');
+
+    if (!slug) {
+      window.location.href = notFoundUrl;
+      return;
+    }
+
+    try {
+      const exists = await blogPostSlugExists(slug);
+      if (!exists) {
+        skeletonEl?.classList.add('hidden');
+        notFoundEl?.classList.remove('hidden');
+        setTimeout(() => { window.location.href = notFoundUrl; }, 3000);
+        return;
+      }
+
+      const result = await fetchBlogPostBySlug(slug);
+      if (result.data && contentEl) {
+        skeletonEl?.classList.add('hidden');
+        contentEl.classList.remove('hidden');
+        renderBlogPost(contentEl, result.data, locale);
+        const cleanUrl = `/${locale}/guia-sauwa-sauna/${slug}/`;
+        if (window.history?.replaceState) {
+          window.history.replaceState({ slug }, '', cleanUrl);
+        }
+      } else {
+        throw new Error('No data returned');
+      }
+    } catch (error) {
+      console.error('[DynamicBlog] Error:', error);
+      skeletonEl?.classList.add('hidden');
+      notFoundEl?.classList.remove('hidden');
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDynamicBlog);
+  } else {
+    initDynamicBlog();
+  }
+  document.addEventListener('astro:page-load', initDynamicBlog);
+</script>
+
+<style>
+  .dynamic-blog-page { min-height: 100vh; }
+  .loader__skeleton { transition: opacity 0.2s ease-out; }
+  .loader__skeleton.hidden, .loader__content.hidden, .loader__notfound.hidden { display: none; }
+  .loader__content { transition: opacity 0.2s ease-in; }
+  .notfound-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; padding: 2rem; text-align: center; }
+  .notfound-title { font-family: var(--font-family-secondary, 'Nunito Sans', system-ui); font-size: 8rem; font-weight: 200; color: var(--color-primary, #DB4529); margin: 0; line-height: 1; }
+  .notfound-heading { font-family: var(--font-family-secondary, 'Nunito Sans', system-ui); font-size: 2rem; font-weight: 300; color: var(--color-text-primary, #1a1a1a); margin: 1rem 0 0.5rem; }
+  .notfound-message { font-family: var(--font-family-primary, 'Inter', system-ui); font-size: 1.125rem; color: var(--color-text-secondary, #6b7280); margin: 0 0 2rem; max-width: 400px; }
+  .notfound-buttons { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .notfound-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.875rem 2rem; font-family: var(--font-family-primary, 'Inter', system-ui); font-size: 0.875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #ffffff; background: var(--color-primary, #DB4529); border: none; border-radius: 4px; text-decoration: none; transition: background-color 0.2s ease; }
+  .notfound-btn:hover { background: var(--color-primary-hover, #BA2515); }
+  .notfound-btn--secondary { background: transparent; color: var(--color-primary, #DB4529); border: 2px solid var(--color-primary, #DB4529); }
+  .notfound-btn--secondary:hover { background: var(--color-primary, #DB4529); color: #ffffff; }
+  @media (max-width: 767px) { .notfound-title { font-size: 5rem; } .notfound-heading { font-size: 1.5rem; } .notfound-message { font-size: 1rem; } }
+</style>

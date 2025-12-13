@@ -17,9 +17,12 @@ import {
   GET_ALL_SESSIONS_SLUGS,
   GET_PARTNER_BY_ID_DYNAMIC,
   GET_PUBLIC_SESSIONS_DYNAMIC,
+  GET_ALL_BLOG_SLUGS,
+  GET_BLOG_POST_BY_SLUG_DYNAMIC,
   type DynamicPartner,
   type DynamicSession,
   type DynamicPublicSession,
+  type DynamicBlogPost,
   type SlugEntry,
 } from './dynamic-queries';
 
@@ -607,7 +610,12 @@ export interface PublicSessionData {
   slug: string;
   title: string;
   sessionType?: string;
+  usesSharedCapacity?: boolean;
+  includedPersons?: number;
+  voucherValidityMonths?: number;
+  requiresFullCapacity?: boolean;
   availabilityStatus: 'active' | 'no_future_dates';
+  duration?: number;
   capacity: number;
   available: number;
   price: number;
@@ -630,7 +638,12 @@ function transformPublicSession(session: DynamicPublicSession): PublicSessionDat
     slug: session.slug,
     title: session.title,
     sessionType: session.sessionType,
+    usesSharedCapacity: session.usesSharedCapacity,
+    includedPersons: session.includedPersons,
+    voucherValidityMonths: session.voucherValidityMonths,
+    requiresFullCapacity: session.requiresFullCapacity,
     availabilityStatus: session.availabilityStatus,
+    duration: session.duration,
     capacity: session.inventory?.capacity || 0,
     available: session.inventory?.available || 0,
     price: session.inventory ? session.inventory.priceCents / 100 : 0,
@@ -737,4 +750,119 @@ export function getLocalizedSessionSubtitle(session: SessionData, locale: Locale
  */
 export function getLocalizedSessionDescription(session: SessionData, locale: Locale): string {
   return getLocalizedValue(session.description, locale);
+}
+
+// ============================================================================
+// BLOG POST FETCHING (WDA-1032)
+// ============================================================================
+
+export interface BlogPostData {
+  id: string;
+  databaseId: number;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  date: string;
+  modified?: string;
+  featuredImage?: {
+    sourceUrl: string;
+    altText: string;
+  };
+  categories?: Array<{
+    id: string;
+    databaseId: number;
+    name: string;
+    slug: string;
+  }>;
+  author?: {
+    name: string;
+    avatar?: string;
+  };
+  seo?: {
+    title?: string;
+    metaDesc?: string;
+  };
+}
+
+/**
+ * Transform raw GraphQL blog post to normalized BlogPostData
+ */
+function transformBlogPost(post: DynamicBlogPost): BlogPostData {
+  return {
+    id: post.id,
+    databaseId: post.databaseId,
+    title: post.title,
+    slug: post.slug,
+    content: post.content,
+    excerpt: post.excerpt,
+    date: post.date,
+    modified: post.modified,
+    featuredImage: post.featuredImage?.node ? {
+      sourceUrl: post.featuredImage.node.sourceUrl,
+      altText: post.featuredImage.node.altText || '',
+    } : undefined,
+    categories: post.categories?.nodes || [],
+    author: post.author?.node ? {
+      name: post.author.node.name,
+      avatar: post.author.node.avatar?.url,
+    } : undefined,
+    seo: post.seo,
+  };
+}
+
+/**
+ * Check if a blog post slug exists
+ */
+export async function blogPostSlugExists(slug: string): Promise<boolean> {
+  const cacheKey = getCacheKey('all_blog_slugs', {});
+
+  let slugs: SlugEntry[];
+
+  const cached = getCachedData<{ posts: { nodes: SlugEntry[] } }>(cacheKey);
+  if (cached) {
+    slugs = cached.data.posts?.nodes || [];
+  } else {
+    const response = await graphqlFetch<{ posts: { nodes: SlugEntry[] } }>(
+      GET_ALL_BLOG_SLUGS
+    );
+    setCachedData(cacheKey, response);
+    slugs = response.posts?.nodes || [];
+  }
+
+  return slugs.some(entry => entry.slug === slug);
+}
+
+/**
+ * Fetch blog post by slug with caching
+ */
+export async function fetchBlogPostBySlug(
+  slug: string,
+  previousHash?: string
+): Promise<{ data: BlogPostData | null; changed: boolean; hash: string }> {
+  const cacheKey = getCacheKey('blog_post', { slug });
+
+  // Check cache first
+  const cached = getCachedData<{ post: DynamicBlogPost | null }>(cacheKey);
+  if (cached) {
+    const data = cached.data.post ? transformBlogPost(cached.data.post) : null;
+    const changed = previousHash ? cached.hash !== previousHash : false;
+    return { data, changed, hash: cached.hash };
+  }
+
+  try {
+    const response = await graphqlFetch<{ post: DynamicBlogPost | null }>(
+      GET_BLOG_POST_BY_SLUG_DYNAMIC,
+      { slug }
+    );
+
+    const hash = setCachedData(cacheKey, response);
+    const data = response.post ? transformBlogPost(response.post) : null;
+    const changed = previousHash ? hash !== previousHash : false;
+
+    return { data, changed, hash };
+  } catch (error) {
+    console.error('[DynamicContent] fetchBlogPostBySlug error:', error);
+    throw error;
+  }
 }

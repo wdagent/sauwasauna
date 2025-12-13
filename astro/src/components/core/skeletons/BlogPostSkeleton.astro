@@ -1,0 +1,293 @@
+---
+/**
+ * BlogPostSkeleton.astro
+ * WDA-1032: Loading skeleton for dynamic blog post pages
+ *
+ * Displays animated placeholder content while blog post data is loading.
+ * Matches the layout structure of BlogPostHero and BlogPostContent.
+ */
+
+export interface Props {
+  /** Show hero section skeleton */
+  showHero?: boolean;
+  /** Show content section skeleton */
+  showContent?: boolean;
+}
+
+const {
+  showHero = true,
+  showContent = true,
+} = Astro.props;
+---
+
+<div class="blog-skeleton">
+  {showHero && (
+    <div class="skeleton-hero">
+      <div class="skeleton-hero__overlay">
+        <div class="skeleton-hero__content">
+          <!-- Category badge -->
+          <div class="skeleton-badge"></div>
+          <!-- Title -->
+          <div class="skeleton-line skeleton-line--title-lg"></div>
+          <div class="skeleton-line skeleton-line--title-md"></div>
+          <!-- Meta info -->
+          <div class="skeleton-meta">
+            <div class="skeleton-line skeleton-line--xs"></div>
+            <div class="skeleton-line skeleton-line--xs"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {showContent && (
+    <article class="skeleton-content">
+      <div class="skeleton-content__container">
+        <!-- Back link -->
+        <div class="skeleton-back">
+          <div class="skeleton-line skeleton-line--sm"></div>
+        </div>
+
+        <!-- Content paragraphs -->
+        <div class="skeleton-paragraphs">
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--80"></div>
+
+          <div class="skeleton-line skeleton-line--heading"></div>
+
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--90"></div>
+          <div class="skeleton-line skeleton-line--60"></div>
+
+          <div class="skeleton-line skeleton-line--heading"></div>
+
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--full"></div>
+          <div class="skeleton-line skeleton-line--70"></div>
+        </div>
+
+        <!-- Share section -->
+        <div class="skeleton-share">
+          <div class="skeleton-line skeleton-line--sm"></div>
+          <div class="skeleton-share__buttons">
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-circle"></div>
+          </div>
+        </div>
+      </div>
+    </article>
+  )}
+</div>
+
+<style>
+  /* Base skeleton animation */
+  @keyframes skeleton-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .blog-skeleton {
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Skeleton elements base */
+  .skeleton-line,
+  .skeleton-badge,
+  .skeleton-circle {
+    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    border-radius: 4px;
+  }
+
+  /* Hero skeleton */
+  .skeleton-hero {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 600px;
+    background: #1a1a1a;
+    position: relative;
+  }
+
+  .skeleton-hero__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .skeleton-hero__content {
+    width: 100%;
+    max-width: 1280px;
+    padding: 0 2rem;
+    margin: 0 auto;
+  }
+
+  /* Hero skeleton elements (dark background) */
+  .skeleton-hero .skeleton-line,
+  .skeleton-hero .skeleton-badge {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200% 100%;
+  }
+
+  .skeleton-badge {
+    width: 120px;
+    height: 32px;
+    margin-bottom: 1.5rem;
+    border-radius: 4px;
+  }
+
+  /* Line variations */
+  .skeleton-line {
+    height: 1rem;
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  .skeleton-line--xs {
+    height: 0.875rem;
+    width: 80px;
+  }
+
+  .skeleton-line--sm {
+    height: 1rem;
+    width: 150px;
+  }
+
+  .skeleton-line--title-lg {
+    height: 3.5rem;
+    width: 80%;
+    margin-bottom: 1rem;
+  }
+
+  .skeleton-line--title-md {
+    height: 3.5rem;
+    width: 50%;
+    margin-bottom: 1.5rem;
+  }
+
+  .skeleton-line--heading {
+    height: 2rem;
+    width: 60%;
+    margin: 2rem 0 1rem 0;
+  }
+
+  .skeleton-line--full {
+    width: 100%;
+  }
+
+  .skeleton-line--90 {
+    width: 90%;
+  }
+
+  .skeleton-line--80 {
+    width: 80%;
+  }
+
+  .skeleton-line--70 {
+    width: 70%;
+  }
+
+  .skeleton-line--60 {
+    width: 60%;
+  }
+
+  .skeleton-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  /* Content skeleton */
+  .skeleton-content {
+    padding: 4rem 0;
+    background: #ffffff;
+  }
+
+  .skeleton-content__container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .skeleton-back {
+    margin-bottom: 2rem;
+  }
+
+  .skeleton-paragraphs {
+    margin-bottom: 3rem;
+  }
+
+  /* Share skeleton */
+  .skeleton-share {
+    padding: 2rem 0;
+    border-top: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .skeleton-share__buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .skeleton-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .skeleton-hero {
+      min-height: 500px;
+    }
+
+    .skeleton-hero__content {
+      padding: 0 1.5rem;
+    }
+
+    .skeleton-line--title-lg {
+      height: 2.5rem;
+      width: 90%;
+    }
+
+    .skeleton-line--title-md {
+      height: 2.5rem;
+      width: 70%;
+    }
+
+    .skeleton-content__container {
+      padding: 0 1.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .skeleton-hero__content {
+      padding: 0 1rem;
+    }
+
+    .skeleton-line--title-lg {
+      height: 2rem;
+    }
+
+    .skeleton-line--title-md {
+      height: 2rem;
+    }
+
+    .skeleton-content__container {
+      padding: 0 1rem;
+    }
+  }
+</style>

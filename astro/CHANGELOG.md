@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - WDA-1032: Dynamic Blog Post Catch-All
+
+- **Dynamic Blog Loading System**
+  - Blog posts created in WordPress after Astro build now load dynamically
+  - No rebuild required for new blog content to appear
+  - Skeleton loading state while fetching content from WordPress API
+
+- **New Files Created**
+  - `src/components/core/skeletons/BlogPostSkeleton.astro` - Loading skeleton for blog posts
+  - `src/pages/{es,ca,en,fr}/dynamic/blog.astro` - Dynamic blog loader pages (4 locales)
+
+- **GraphQL & Client Updates**
+  - `src/lib/dynamic-queries.ts` - Added `GET_ALL_BLOG_SLUGS` and `GET_BLOG_POST_BY_SLUG_DYNAMIC` queries
+  - `src/lib/dynamic-content-client.ts` - Added `blogPostSlugExists()` and `fetchBlogPostBySlug()` functions
+  - `src/lib/dynamic-renderers.ts` - Added `renderBlogPost()` for client-side blog rendering with i18n support
+
+- **.htaccess Catch-All Rules**
+  - Added blog post catch-all: `/es/guia-sauwa-sauna/[slug]/` → `/es/dynamic/blog/?slug=[slug]`
+  - Fixed all catch-all rules to use folder paths (`/dynamic/blog/`) instead of `.html` files
+  - Corrected session and partner rules for consistency with Astro's output format
+
+- **Bug Fix: RewriteRule Target Format**
+  - Changed from `.html` files to directory paths (Astro generates `blog/index.html`, not `blog.html`)
+  - Session: `/$1/dynamic/session/?slug=$3&partner=$2`
+  - Partner: `/$1/dynamic/partner/?slug=$2`
+  - Blog: `/$1/dynamic/blog/?slug=$2`
+
+### Fixed - WDA-1014: Client-Side Hydration Data & Style Fixes
+
+- **Dynamic Query Enhancement**
+  - Added missing fields to `GET_PUBLIC_SESSIONS_DYNAMIC` query: `duration`, `includedPersons`, `voucherValidityMonths`, `usesSharedCapacity`, `requiresFullCapacity`
+  - Updated `DynamicPublicSession` and `PublicSessionData` interfaces with new fields
+  - Fixed `transformPublicSession()` to map all backend fields correctly
+
+- **Real Data Instead of Hardcoded Placeholders**
+  - Fixed `generateSessionCardHtml()` to use real session data (`session.duration`, `session.includedPersons`, `session.voucherValidityMonths`)
+  - Removed hardcoded placeholders: 90 min → real duration, 2 personas → real included persons, 4 meses → real validity
+
+- **Style Recovery**
+  - Copied exact scoped styles from `partners/SessionCard.astro` to `session-card.css`
+  - Fixed class names from BEM (`sauwa-session-card`) back to original (`session-card`)
+  - Restored original hover effects and visual design
+
+- **Correct Session Type Order**
+  - Fixed `groupSessionsByType()` in `dynamic-renderers.ts` to maintain proper display order
+  - Order: SINGLE → PACK → VOUCHER (bonos) → PRIVATE
+  - Bonos now appear after "Packs Grupales" as intended
+
+- **Files Modified**
+  - `src/lib/dynamic-queries.ts` - Complete GraphQL query
+  - `src/lib/dynamic-content-client.ts` - Updated interfaces and transformation
+  - `src/lib/dynamic-renderers.ts` - Real data usage + correct order
+  - `src/styles/components/sessions/session-card.css` - Original styles
+  - `src/components/partners/SessionTypeSection.astro` - Fixed class names
+
 ### To Do
 - Integración con pasarela de pago (Stripe/Redsys)
 - Check-in digital con QR

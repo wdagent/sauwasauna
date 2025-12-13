@@ -47,9 +47,22 @@
     # dynamic loader pages that fetch content from API at runtime.
 
     # EXCLUDE known static routes from catch-all
-    # Blog/Guide pages
-    RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/guia-sauwa-sauna(/|$) [NC]
+    # Blog/Guide index page (listing) - static
+    RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/guia-sauwa-sauna/?$ [NC]
     RewriteRule ^ - [L]
+
+    # Blog pagination - static
+    RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/guia-sauwa-sauna/page/[0-9]+/?$ [NC]
+    RewriteRule ^ - [L]
+
+    # BLOG POST CATCH-ALL (WDA-1032)
+    # Pattern: /es/guia-sauwa-sauna/post-slug/ -> /es/dynamic/blog/?slug=post-slug
+    # Individual blog posts created after build are loaded dynamically
+    # Only triggers when static page doesn't exist (post created after build)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/$1/guia-sauwa-sauna/$2/index.html !-f
+    RewriteRule ^(es|ca|en|fr)/guia-sauwa-sauna/([^/]+)/?$ /$1/dynamic/blog/?slug=$2 [L,QSA]
 
     # Legal pages
     RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/(politica-de-privacidad|privacy-policy|politique-de-confidentialite|politica-de-privacitat)(/|$) [NC]
@@ -81,21 +94,21 @@
     RewriteRule ^ - [L]
 
     # SESSION CATCH-ALL (3-segment URLs: /locale/partner/session/)
-    # Pattern: /es/hotel-name/session-name/ -> /es/dynamic/session.html?slug=session-name&partner=hotel-name
+    # Pattern: /es/hotel-name/session-name/ -> /es/dynamic/session/?slug=session-name&partner=hotel-name
     # Must come BEFORE partner catch-all (more specific rule first)
     RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/([^/]+)/([^/]+)/?$
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{DOCUMENT_ROOT}/$1/$2/$3/index.html !-f
-    RewriteRule ^(es|ca|en|fr)/([^/]+)/([^/]+)/?$ /$1/dynamic/session.html?slug=$3&partner=$2 [L,QSA]
+    RewriteRule ^(es|ca|en|fr)/([^/]+)/([^/]+)/?$ /$1/dynamic/session/?slug=$3&partner=$2 [L,QSA]
 
     # PARTNER CATCH-ALL (2-segment URLs: /locale/partner/)
-    # Pattern: /es/hotel-name/ -> /es/dynamic/partner.html?slug=hotel-name
+    # Pattern: /es/hotel-name/ -> /es/dynamic/partner/?slug=hotel-name
     RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/([^/]+)/?$
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{DOCUMENT_ROOT}/$1/$2/index.html !-f
-    RewriteRule ^(es|ca|en|fr)/([^/]+)/?$ /$1/dynamic/partner.html?slug=$2 [L,QSA]
+    RewriteRule ^(es|ca|en|fr)/([^/]+)/?$ /$1/dynamic/partner/?slug=$2 [L,QSA]
 </IfModule>
 
 # ============================================

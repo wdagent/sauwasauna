@@ -229,7 +229,12 @@ export const GET_PUBLIC_SESSIONS_DYNAMIC = `
       slug
       title
       sessionType
+      usesSharedCapacity
+      includedPersons
+      voucherValidityMonths
+      requiresFullCapacity
       availabilityStatus
+      duration
       featuredImage {
         sourceUrl
         altText
@@ -343,7 +348,12 @@ export interface DynamicPublicSession {
   slug: string;
   title: string;
   sessionType?: string;
+  usesSharedCapacity?: boolean;
+  includedPersons?: number;
+  voucherValidityMonths?: number;
+  requiresFullCapacity?: boolean;
   availabilityStatus: 'active' | 'no_future_dates';
+  duration?: number;
   featuredImage?: {
     sourceUrl: string;
     altText?: string;
@@ -387,4 +397,110 @@ export interface SlugEntry {
   slug: string;
   databaseId: number;
   sauwaPartnerId?: number;
+}
+
+// ============================================================================
+// BLOG POST QUERIES (WDA-1032)
+// ============================================================================
+
+/**
+ * Get all blog post slugs for validation
+ * Used for: Catch-all page validation (check if blog post exists)
+ * Returns: List of all published post slugs
+ */
+export const GET_ALL_BLOG_SLUGS = `
+  query GetAllBlogSlugs {
+    posts(first: 500, where: { status: PUBLISH }) {
+      nodes {
+        slug
+        databaseId
+      }
+    }
+  }
+`;
+
+/**
+ * Get blog post by slug with full content
+ * Used for: Dynamic blog post page hydration
+ * Returns: Full post data including content, meta, and author
+ */
+export const GET_BLOG_POST_BY_SLUG_DYNAMIC = `
+  query GetBlogPostBySlugDynamic($slug: ID!) {
+    post(id: $slug, idType: SLUG) {
+      id
+      databaseId
+      title
+      slug
+      content
+      excerpt
+      date
+      modified
+      featuredImage {
+        node {
+          sourceUrl
+          altText
+        }
+      }
+      categories {
+        nodes {
+          id
+          databaseId
+          name
+          slug
+        }
+      }
+      author {
+        node {
+          name
+          avatar {
+            url
+          }
+        }
+      }
+      seo {
+        title
+        metaDesc
+      }
+    }
+  }
+`;
+
+/**
+ * Type definition for dynamic blog post response
+ */
+export interface DynamicBlogPost {
+  id: string;
+  databaseId: number;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  date: string;
+  modified?: string;
+  featuredImage?: {
+    node: {
+      sourceUrl: string;
+      altText?: string;
+    };
+  };
+  categories?: {
+    nodes: Array<{
+      id: string;
+      databaseId: number;
+      name: string;
+      slug: string;
+    }>;
+  };
+  author?: {
+    node: {
+      name: string;
+      avatar?: {
+        url: string;
+      };
+    };
+  };
+  seo?: {
+    title?: string;
+    metaDesc?: string;
+  };
 }
