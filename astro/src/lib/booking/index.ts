@@ -19,7 +19,6 @@ export type {
   SaunaSession,
   SessionDetails,
   SessionPartner,
-  PartnerConnection,
   SessionResponse,
   // Availability
   DateAvailability,

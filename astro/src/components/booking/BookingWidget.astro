@@ -3242,8 +3242,8 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         console.error('[BookingWidget] Submit error:', error);
 
         // WDA-921: Check if error is rate limit related
-        const errorMessage = (error as Error).message || '';
-        if (this.isRateLimitError(errorMessage)) {
+        const errorMsg = (error as Error).message || '';
+        if (this.isRateLimitError(errorMsg)) {
           this.handleRateLimit();
         }
 

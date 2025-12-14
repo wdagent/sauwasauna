@@ -108,7 +108,8 @@ export interface SessionDetails {
   tituloEn?: string | null;
   sessionSubtitleEn?: string | null;
   sessionDescriptionEn?: string | null;
-  /** WDA-986: Partner field removed - use sauwaPartnerId on parent SaunaSession instead */
+  /** WDA-986: Partner field - optional for legacy pages (open-days) */
+  partner?: PartnerEdge | null;
 }
 
 /**

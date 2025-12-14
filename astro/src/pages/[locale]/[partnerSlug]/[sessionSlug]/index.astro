@@ -23,6 +23,10 @@ import { getLocalizedSession } from '../../../../lib/i18n/sessions';
 type Locale = 'es' | 'ca' | 'en' | 'fr';
 const locales: Locale[] = ['es', 'ca', 'en', 'fr'];
 
+interface Props {
+  session: SessionData;
+}
+
 export const getStaticPaths: GetStaticPaths = async () => {
   // Define locales inside getStaticPaths to ensure they're accessible
   const pathLocales: Array<'es' | 'ca' | 'en' | 'fr'> = ['es', 'ca', 'en', 'fr'];
@@ -74,8 +78,11 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }
 };
 
-const { locale, partnerSlug, sessionSlug } = Astro.params;
-const { session } = Astro.props;
+const { locale: localeParam, partnerSlug: partnerSlugParam, sessionSlug: sessionSlugParam } = Astro.params;
+const locale = (localeParam ?? 'es') as Locale;
+const partnerSlug = partnerSlugParam as string;
+const sessionSlug = sessionSlugParam as string;
+const { session } = Astro.props as Props;
 
 if (!session || !session.partner) {
   return Astro.redirect('/404');

@@ -638,6 +638,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private attachEventListeners(): void {
+      if (!this.form) return;
+
       const inputs = this.form.querySelectorAll('input, select, textarea');
       inputs.forEach((input) => {
         input.addEventListener('blur', (e) => {
@@ -724,6 +726,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private validateForm(): boolean {
+      if (!this.form) return false;
+
       const inputs = this.form.querySelectorAll('input, select, textarea');
       let isValid = true;
 
@@ -737,6 +741,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private async handleSubmit(): Promise<void> {
+      if (!this.form) return;
+
       if (!this.validateForm()) {
         const firstError = this.form.querySelector('.partners-form__error--visible');
         if (firstError) {
@@ -745,8 +751,10 @@ const { locale, title, subtitle } = Astro.props;
         return;
       }
 
-      this.submitBtn.disabled = true;
-      this.submitBtn.classList.add('partners-form__submit--loading');
+      if (this.submitBtn) {
+        this.submitBtn.disabled = true;
+        this.submitBtn.classList.add('partners-form__submit--loading');
+      }
 
       const formData = new FormData(this.form);
 
@@ -754,13 +762,16 @@ const { locale, title, subtitle } = Astro.props;
         await this.submitToBackend(formData);
         this.showMessage('success');
         this.form.reset();
-        document.getElementById('charCount')!.textContent = '0';
+        const charCount = document.getElementById('charCount');
+        if (charCount) charCount.textContent = '0';
       } catch (error) {
         console.error('Form submission error:', error);
         this.showMessage('error');
       } finally {
-        this.submitBtn.disabled = false;
-        this.submitBtn.classList.remove('partners-form__submit--loading');
+        if (this.submitBtn) {
+          this.submitBtn.disabled = false;
+          this.submitBtn.classList.remove('partners-form__submit--loading');
+        }
       }
     }
 
@@ -853,7 +864,9 @@ Formulario enviado desde: ${window.location.href}`;
       const successMsg = document.getElementById('successMessage');
       const errorMsg = document.getElementById('errorMessage');
 
-      this.form.style.display = 'none';
+      if (this.form) {
+        this.form.style.display = 'none';
+      }
 
       if (type === 'success' && successMsg) {
         successMsg.classList.add('partners-form__message--visible');

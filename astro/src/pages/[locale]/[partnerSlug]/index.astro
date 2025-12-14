@@ -25,6 +25,7 @@ import { getSessionTypesI18n } from '../../../lib/i18n/sessionTypes';
 type Locale = 'es' | 'ca' | 'en' | 'fr';
 
 interface PartnerData {
+  databaseId: number;
   slug: string;
   title: string;
   address?: string;
@@ -37,6 +38,10 @@ interface PartnerData {
     altText: string;
   };
   sessions: SessionData[];
+}
+
+interface Props {
+  partner: PartnerData;
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -62,6 +67,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
       if (!partnerMap.has(partnerSlug)) {
         partnerMap.set(partnerSlug, {
+          databaseId: session.partner.databaseId,
           slug: session.partner.slug,
           title: session.partner.title,
           address: session.partner.address,
@@ -100,8 +106,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
   }
 };
 
-const { locale, partnerSlug } = Astro.params;
-const { partner } = Astro.props;
+const { locale: localeParam, partnerSlug: partnerSlugParam } = Astro.params;
+const locale = (localeParam ?? 'es') as Locale;
+const partnerSlug = partnerSlugParam as string;
+const { partner } = Astro.props as Props;
 
 if (!partner) {
   return Astro.redirect('/404');
@@ -193,7 +201,7 @@ const initialHash = generateContentHash({
 
 // SEO
 const seoTitle = `${partner.title} | ${t.heroTitle}`;
-const seoDescription = `${t.sessions} en ${partner.title}. SAUWA Sauna Andorra.`;
+const seoDescription = `${t.sessionsLabel} en ${partner.title}. SAUWA Sauna Andorra.`;
 
 // Hero image: priority to heroImage, fallback to featuredImage
 const heroImage = partner.heroImage || partner.featuredImage?.sourceUrl || '';
@@ -229,6 +237,8 @@ const hreflangs = allLocales.map(loc => ({
       slug={partner.slug}
       locale={locale as 'es' | 'ca' | 'en' | 'fr'}
       initialHash={initialHash}
+      partnerSlug={partner.slug}
+      partnerId={partner.databaseId}
     >
       <PartnerSkeleton slot="skeleton" showHero={false} showInfo={true} showSessions={true} sessionCount={partner.sessions.length || 3} />
 

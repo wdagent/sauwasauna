@@ -36,7 +36,8 @@ try {
 }
 
 // Get locale from Astro.params or default to 'es'
-const locale = Astro.params.locale || 'es';
+type Locale = 'es' | 'ca' | 'en' | 'fr';
+const locale = (Astro.params.locale || 'es') as Locale;
 
 // Translations for "All categories" text
 const allCategoriesText = {
@@ -53,7 +54,6 @@ const allCategoriesText = {
       <!-- Desktop: Horizontal filter buttons -->
       <div class="desktop-filter">
         <CategoryFilter
-          categories={categories}
           allCategoriesText={allCategoriesText}
           locale={locale}
         />
@@ -84,8 +84,8 @@ const allCategoriesText = {
    * Example: Listen for filter events from both components
    * Both CategoryFilter and CategoryDropdown dispatch the same event
    */
-  document.addEventListener('blog:filter', (event) => {
-    const { category } = event.detail;
+  document.addEventListener('blog:filter', (event: Event) => {
+    const { category } = (event as CustomEvent).detail;
     console.log('Category selected:', category);
 
     // Here you would typically:

@@ -4,6 +4,7 @@ import GoogleTagManagerNoScript from '../components/GoogleTagManagerNoScript.ast
 import AnalyticsDebugger from '../components/AnalyticsDebugger.astro';
 import NavbarScroll from '../components/NavbarScroll.astro';
 import '../styles/global.css';
+import '../styles/sessions-global.css'; // WDA-1014: Global styles for client-side hydration
 
 interface Props {
   title: string;
@@ -78,7 +79,7 @@ const gtmId = import.meta.env.PUBLIC_GTM_ID || 'GTM-5FJSRXL7';
     <GoogleTagManagerNoScript gtmId={gtmId} />
 
     <!-- Navbar Scroll (aparece al hacer scroll down) - Only if navbar prop is 'default' -->
-    {navbar === 'default' && <NavbarScroll locale={lang} />}
+    {navbar === 'default' && <NavbarScroll locale={lang as 'es' | 'ca' | 'en' | 'fr'} />}
 
     <slot />
 

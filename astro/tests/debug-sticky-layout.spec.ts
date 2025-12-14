@@ -196,10 +196,11 @@ test.describe('BenefitsBlogSection - Sticky Layout Debug', () => {
     // 10. Check grid actual height - CRITICAL for sticky to work
     console.log('\n📏 GRID ACTUAL HEIGHT:');
     const gridHeight = await grid.evaluate((el) => {
+      const htmlEl = el as HTMLElement;
       return {
-        offsetHeight: el.offsetHeight,
-        scrollHeight: el.scrollHeight,
-        clientHeight: el.clientHeight,
+        offsetHeight: htmlEl.offsetHeight,
+        scrollHeight: htmlEl.scrollHeight,
+        clientHeight: htmlEl.clientHeight,
       };
     });
     console.log('   Grid offset height:', gridHeight.offsetHeight, 'px');
@@ -269,10 +270,11 @@ test.describe('BenefitsBlogSection - Sticky Layout Debug', () => {
     console.log('   Viewport:', viewportSize);
 
     const stickyContentHeight = await stickyContent.evaluate((el) => {
+      const htmlEl = el as HTMLElement;
       return {
-        offsetHeight: el.offsetHeight,
-        scrollHeight: el.scrollHeight,
-        clientHeight: el.clientHeight,
+        offsetHeight: htmlEl.offsetHeight,
+        scrollHeight: htmlEl.scrollHeight,
+        clientHeight: htmlEl.clientHeight,
       };
     });
     console.log('   Sticky content heights:', stickyContentHeight);

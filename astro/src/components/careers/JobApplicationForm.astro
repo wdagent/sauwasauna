@@ -579,6 +579,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private attachEventListeners(): void {
+      if (!this.form) return;
+
       // Validate on blur
       const inputs = this.form.querySelectorAll('input, textarea');
       inputs.forEach((input) => {
@@ -687,6 +689,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private validateForm(): boolean {
+      if (!this.form) return false;
+
       const inputs = this.form.querySelectorAll('input, textarea');
       let isValid = true;
 
@@ -700,6 +704,8 @@ const { locale, title, subtitle } = Astro.props;
     }
 
     private async handleSubmit(): Promise<void> {
+      if (!this.form) return;
+
       if (!this.validateForm()) {
         // Scroll to first error
         const firstError = this.form.querySelector('.careers-form__error--visible');
@@ -710,8 +716,10 @@ const { locale, title, subtitle } = Astro.props;
       }
 
       // Show loading state
-      this.submitBtn.disabled = true;
-      this.submitBtn.classList.add('careers-form__submit--loading');
+      if (this.submitBtn) {
+        this.submitBtn.disabled = true;
+        this.submitBtn.classList.add('careers-form__submit--loading');
+      }
 
       // Get form data
       const formData = new FormData(this.form);
@@ -724,17 +732,20 @@ const { locale, title, subtitle } = Astro.props;
         // Show success message
         this.showMessage('success');
         this.form.reset();
-        document.getElementById('charCount')!.textContent = '0';
+        const charCount = document.getElementById('charCount');
+        if (charCount) charCount.textContent = '0';
       } catch (error) {
         console.error('Form submission error:', error);
         this.showMessage('error');
       } finally {
-        this.submitBtn.disabled = false;
-        this.submitBtn.classList.remove('careers-form__submit--loading');
+        if (this.submitBtn) {
+          this.submitBtn.disabled = false;
+          this.submitBtn.classList.remove('careers-form__submit--loading');
+        }
       }
     }
 
-    private async submitToBackend(formData: FormData): Promise<void> {
+    private async submitToBackend(formData: globalThis.FormData): Promise<void> {
       const GRAPHQL_URL = 'https://backend.sauwasauna.com/graphql';
 
       // GraphQL mutation for job application submission
@@ -818,7 +829,9 @@ Formulario enviado desde: ${window.location.href}`;
       const errorMsg = document.getElementById('errorMessage');
 
       // Hide form
-      this.form.style.display = 'none';
+      if (this.form) {
+        this.form.style.display = 'none';
+      }
 
       if (type === 'success' && successMsg) {
         successMsg.classList.add('careers-form__message--visible');

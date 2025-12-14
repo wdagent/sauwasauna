@@ -118,7 +118,7 @@ test.describe('Visual Inspection - Screenshots & Analysis', () => {
     await page.waitForTimeout(1000);
 
     const snapshot = await page.accessibility.snapshot({
-      root: await page.locator('.benefits-blog-section').elementHandle(),
+      root: (await page.locator('.benefits-blog-section').elementHandle()) ?? undefined,
     });
 
     // Save to JSON

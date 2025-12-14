@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed - TypeScript Build Errors (160 → 0)
+
+- **Astro 5 Migration Fixes**
+  - Added `Props` interface and type casting in dynamic pages (`[partnerSlug]/index.astro`, `[sessionSlug]/index.astro`)
+  - Fixed `Astro.params` locale type from `string` to `Locale` union type
+  - Added `partner` field to `SessionDetails` interface in `booking/types.ts`
+
+- **Type Export Cleanup**
+  - Removed duplicate type exports in `wordpress-complete.ts`
+  - Removed non-existent `PartnerConnection` export from `booking/index.ts`
+  - Added missing `language` and `translations` fields to `BlogPost` interface
+
+- **Form Components**
+  - Fixed `FormData.get()` null safety in `JobApplicationForm.astro` and `PartnerApplicationForm.astro`
+  - Changed `FormData` to `globalThis.FormData` for Node.js compatibility
+  - Fixed variable collision (`errorMessage` → `errorMsg`) in `BookingWidget.astro` catch block
+
+- **Component Props**
+  - Fixed `Layout.astro` locale prop type casting for `NavbarScroll`
+  - Fixed `CategoryFilterExample.astro` locale type and `CustomEvent` casting
+  - Removed invalid `categories` prop from `CategoryFilter` component usage
+
+- **Test Files**
+  - Fixed `elementHandle()` null → undefined conversion in `automated-inspection.spec.ts`
+  - Cast elements to `HTMLElement` for `offsetHeight` access in `debug-sticky-layout.spec.ts`
+
+- **Vitest Config**
+  - Updated coverage config for Vitest 4.0 (`lines` → `statements` under `thresholds`)
+
 ### Added - WDA-1032: Dynamic Blog Post Catch-All
 
 - **Dynamic Blog Loading System**

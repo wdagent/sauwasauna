@@ -450,25 +450,5 @@ export async function getCachedPosts(limit: number = 6): Promise<WPPost[]> {
 }
 
 // ============================================
-// Export all functions and types
+// Note: All types and functions are exported inline above
 // ============================================
-
-export {
-  // Types
-  WPCategory,
-  WPFeaturedImage,
-  WPPost,
-  WPGraphQLResponse,
-
-  // Utils
-  cleanExcerpt,
-  truncateExcerpt,
-  formatDate,
-  formatDateShort,
-  getReadingTime,
-  getPrimaryCategory,
-
-  // Cache
-  getCachedPosts,
-  SimpleCache
-};

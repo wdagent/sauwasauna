@@ -21,6 +21,20 @@ export interface Category {
   count?: number;
 }
 
+export interface BlogPostLanguage {
+  code: string;
+  locale: string;
+  name: string;
+}
+
+export interface BlogPostTranslation {
+  id: string;
+  slug: string;
+  language: {
+    code: string;
+  };
+}
+
 export interface BlogPost {
   id: string;
   title: string;
@@ -45,6 +59,10 @@ export interface BlogPost {
     title?: string;
     metaDesc?: string;
   };
+  /** Polylang language info */
+  language?: BlogPostLanguage;
+  /** Polylang translations */
+  translations?: BlogPostTranslation[];
 }
 
 export interface PageInfo {
