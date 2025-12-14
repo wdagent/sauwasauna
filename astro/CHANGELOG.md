@@ -36,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Vitest Config**
   - Updated coverage config for Vitest 4.0 (`lines` → `statements` under `thresholds`)
 
+### Fixed - WDA-1032: Dynamic Blog Slug Extraction Bug
+
+- **Critical Fix: Slug extraction from URL path**
+  - Fixed JavaScript not receiving slug when using .htaccess internal rewrite
+  - Problem: `window.location.search` was empty because browser shows original URL, not rewritten URL
+  - Solution: Extract slug from URL path (`/es/guia-sauwa-sauna/{slug}/`) when query string is empty
+  - Updated all 4 locale pages: `es/ca/en/fr/dynamic/blog.astro`
+
 ### Added - WDA-1032: Dynamic Blog Post Catch-All
 
 - **Dynamic Blog Loading System**

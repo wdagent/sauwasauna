@@ -54,7 +54,6 @@ const i18n = {
 
 <script>
   import {
-    blogPostSlugExists,
     fetchBlogPostBySlug,
     type Locale,
   } from '../../../lib/dynamic-content-client';
@@ -63,7 +62,17 @@ const i18n = {
 
   async function initDynamicBlog() {
     const params = new URLSearchParams(window.location.search);
-    const slug = params.get('slug');
+    let slug = params.get('slug');
+
+    // If no slug in query string, try to extract from URL path
+    // Pattern: /{locale}/guia-sauwa-sauna/{slug}/
+    if (!slug) {
+      const pathMatch = window.location.pathname.match(/\/(?:es|ca|en|fr)\/guia-sauwa-sauna\/([^\/]+)\/?$/);
+      if (pathMatch) {
+        slug = pathMatch[1];
+      }
+    }
+
     const locale = (document.querySelector('[data-locale]')?.getAttribute('data-locale') || 'es') as Locale;
     const notFoundUrl = `/${locale}/404/`;
 
@@ -78,20 +87,7 @@ const i18n = {
     }
 
     try {
-      // Validate slug exists
-      const exists = await blogPostSlugExists(slug);
-
-      if (!exists) {
-        console.warn('[DynamicBlog] Slug not found:', slug);
-        skeletonEl?.classList.add('hidden');
-        notFoundEl?.classList.remove('hidden');
-        setTimeout(() => {
-          window.location.href = notFoundUrl;
-        }, 3000);
-        return;
-      }
-
-      // Fetch the blog post
+      // Fetch post directly (bypasses Polylang filtering issues)
       const result = await fetchBlogPostBySlug(slug);
 
       if (result.data && contentEl) {
@@ -105,7 +101,13 @@ const i18n = {
           window.history.replaceState({ slug }, '', cleanUrl);
         }
       } else {
-        throw new Error('No data returned');
+        // Post not found - show 404 state
+        console.warn('[DynamicBlog] Post not found:', slug);
+        skeletonEl?.classList.add('hidden');
+        notFoundEl?.classList.remove('hidden');
+        setTimeout(() => {
+          window.location.href = notFoundUrl;
+        }, 3000);
       }
     } catch (error) {
       console.error('[DynamicBlog] Error loading content:', error);
