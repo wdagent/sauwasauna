@@ -790,11 +790,13 @@ const blogPostContent: Record<Locale, {
   backToBlog: string;
   share: string;
   readingTime: string;
+  breadcrumbHome: string;
+  breadcrumbBlog: string;
 }> = {
-  es: { backToBlog: 'Volver al blog', share: 'Compartir', readingTime: 'min de lectura' },
-  ca: { backToBlog: 'Tornar al blog', share: 'Compartir', readingTime: 'min de lectura' },
-  en: { backToBlog: 'Back to blog', share: 'Share', readingTime: 'min read' },
-  fr: { backToBlog: 'Retour au blog', share: 'Partager', readingTime: 'min de lecture' },
+  es: { backToBlog: 'Volver al blog', share: 'Compartir', readingTime: 'min de lectura', breadcrumbHome: 'Inicio', breadcrumbBlog: 'Blog' },
+  ca: { backToBlog: 'Tornar al blog', share: 'Compartir', readingTime: 'min de lectura', breadcrumbHome: 'Inici', breadcrumbBlog: 'Blog' },
+  en: { backToBlog: 'Back to blog', share: 'Share', readingTime: 'min read', breadcrumbHome: 'Home', breadcrumbBlog: 'Blog' },
+  fr: { backToBlog: 'Retour au blog', share: 'Partager', readingTime: 'min de lecture', breadcrumbHome: 'Accueil', breadcrumbBlog: 'Blog' },
 };
 
 /**
@@ -846,6 +848,8 @@ export function renderBlogPost(
   const encodedUrl = encodeURIComponent(currentUrl);
   const encodedTitle = encodeURIComponent(post.title);
 
+  const homeUrl = `/${validLocale}/`;
+
   const heroHtml = `
     <section class="blog-post-hero" role="banner">
       <div class="hero-background">
@@ -868,6 +872,18 @@ export function renderBlogPost(
           <span class="meta-separator" aria-hidden="true">•</span>
           <span class="meta-reading-time">${readingTime} ${content.readingTime}</span>
         </div>
+        <div class="hero-breadcrumb">
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="${homeUrl}" class="breadcrumb-link">${content.breadcrumbHome}</a>
+            <span class="breadcrumb-separator" aria-hidden="true">/</span>
+            <a href="${blogUrl}" class="breadcrumb-link">${content.breadcrumbBlog}</a>
+            <span class="breadcrumb-separator" aria-hidden="true">/</span>
+            <span class="breadcrumb-text">${post.title}</span>
+          </nav>
+        </div>
+        <a href="#post-content" class="scroll-indicator" aria-label="Scroll to article content">
+          <div class="scroll-icon"></div>
+        </a>
       </div>
     </section>
   `;

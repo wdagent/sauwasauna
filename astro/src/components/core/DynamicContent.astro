@@ -31,6 +31,8 @@ export interface Props {
   initialHash?: string;
   /** Partner slug (required for session content type) */
   partnerSlug?: string;
+  /** Partner database ID (for fetching sessions dynamically) */
+  partnerId?: number;
   /** Additional CSS class */
   class?: string;
   /** Disable hydration (render SSG only) */
@@ -43,6 +45,7 @@ const {
   locale,
   initialHash = '',
   partnerSlug = '',
+  partnerId = 0,
   class: className = '',
   static: isStatic = false,
 } = Astro.props;
@@ -60,6 +63,7 @@ const instanceId = `dynamic-${contentType}-${slug}-${Math.random().toString(36).
   data-locale={locale}
   data-initial-hash={initialHash}
   data-partner-slug={partnerSlug}
+  data-partner-id={partnerId}
   data-static={isStatic ? 'true' : 'false'}
 >
   <!-- Skeleton slot: shown while loading -->
@@ -87,6 +91,7 @@ const instanceId = `dynamic-${contentType}-${slug}-${Math.random().toString(36).
     import {
       fetchPartnerBySlug,
       fetchSessionBySlug,
+      fetchPublicSessions,
       onDynamicContent,
       type Locale,
     } from '../../lib/dynamic-content-client';
@@ -94,6 +99,7 @@ const instanceId = `dynamic-${contentType}-${slug}-${Math.random().toString(36).
     import {
       renderPartner,
       renderSession,
+      renderGroupedSessions,
       showError,
       showContent,
     } from '../../lib/dynamic-renderers';
@@ -120,9 +126,8 @@ const instanceId = `dynamic-${contentType}-${slug}-${Math.random().toString(36).
       const slug = container.dataset.slug || '';
       const locale = (container.dataset.locale || 'es') as Locale;
       const initialHash = container.dataset.initialHash || '';
-      // partnerSlug reserved for future use with session lists
-      const _partnerSlug = container.dataset.partnerSlug || '';
-      void _partnerSlug;
+      const partnerSlug = container.dataset.partnerSlug || '';
+      const partnerId = parseInt(container.dataset.partnerId || '0', 10);
 
       if (!slug) {
         console.warn('[DynamicContent] Missing slug for instance:', instanceId);
@@ -140,6 +145,13 @@ const instanceId = `dynamic-${contentType}-${slug}-${Math.random().toString(36).
             } else {
               // Content unchanged, just show it
               showContent(container);
+            }
+
+            // WDA-990 Enhancement: Hydrate sessions list dynamically
+            // Uses global CSS from sessions-global.css (BEM classes)
+            if (partnerId > 0) {
+              const sessions = await fetchPublicSessions({ partnerId });
+              renderGroupedSessions(container, sessions, locale, partnerSlug);
             }
           }
         } else if (contentType === 'session') {
