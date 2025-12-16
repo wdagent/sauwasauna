@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Blog Infinite Scroll
+
+- **Automatic infinite scroll on blog listing**
+  - Replaced "Load More" button with `IntersectionObserver` sentinel
+  - Loading spinner + "Cargando artículos..." text when reaching bottom
+  - Critical fix: `hasNextPage` was always `false` due to GraphQL pagination not reflecting language-filtered results
+  - Solution: Client-side pagination with cached filtered posts per language/category
+  - Cursor uses numeric offset for accurate post-filter pagination
+  - `prefers-reduced-motion` support for spinner animation
+  - Changes in:
+    - `src/components/blog/BlogGrid.astro` - Sentinel + Observer
+    - `src/lib/blog-queries.ts` - `allFilteredPostsCache` + client-side pagination
+  - Verified: 9 initial posts → scroll → 13 total posts loaded automatically
+
 ### Fixed - TypeScript Build Errors (160 → 0)
 
 - **Astro 5 Migration Fixes**
