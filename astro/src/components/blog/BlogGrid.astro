@@ -77,12 +77,15 @@ const {
     </button>
   </div>
 
-  <!-- Load More Button -->
-  <div class="load-more-wrapper hidden" id="load-more-wrapper">
-    <button id="load-more-button" class="load-more-button" type="button">
-      <span class="button-text">{loadMoreText}</span>
-      <span class="button-loading hidden">{loadingText}</span>
-    </button>
+  <!-- Infinite Scroll Sentinel & Loading Indicator -->
+  <div id="load-more-sentinel" class="load-more-sentinel hidden">
+    <div class="loading-spinner" aria-hidden="true">
+      <svg class="spinner-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+        <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+      </svg>
+    </div>
+    <span class="loading-text">{loadingText}</span>
   </div>
 </div>
 
@@ -95,9 +98,11 @@ const {
   const grid = document.getElementById('blog-grid');
   const emptyState = document.getElementById('blog-empty');
   const errorState = document.getElementById('blog-error');
-  const loadMoreWrapper = document.getElementById('load-more-wrapper');
-  const loadMoreButton = document.getElementById('load-more-button') as HTMLButtonElement | null;
+  const loadMoreSentinel = document.getElementById('load-more-sentinel');
   const retryButton = document.getElementById('retry-button');
+
+  // IntersectionObserver for infinite scroll
+  let observer: IntersectionObserver | null = null;
 
   // Get configuration from data attributes or props
   const locale = document.documentElement.lang as 'es' | 'ca' | 'en' | 'fr' || 'es';
@@ -222,24 +227,40 @@ const {
   }
 
   /**
-   * Toggle load more button
+   * Toggle load more sentinel visibility
    */
   function toggleLoadMore(show: boolean): void {
-    loadMoreWrapper?.classList.toggle('hidden', !show);
+    loadMoreSentinel?.classList.toggle('hidden', !show);
+
+    // Setup or disconnect observer based on hasNextPage
+    if (show && loadMoreSentinel) {
+      setupIntersectionObserver();
+    } else if (observer) {
+      observer.disconnect();
+    }
   }
 
   /**
-   * Toggle loading state
+   * Setup IntersectionObserver for infinite scroll
    */
-  function toggleLoadingState(loading: boolean): void {
-    if (!loadMoreButton) return;
+  function setupIntersectionObserver(): void {
+    if (!loadMoreSentinel || observer) return;
 
-    const text = loadMoreButton.querySelector('.button-text');
-    const loader = loadMoreButton.querySelector('.button-loading');
+    observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting && state.hasNextPage && !state.isLoading) {
+          loadPosts(true);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px', // Load 100px before reaching sentinel
+        threshold: 0.1,
+      }
+    );
 
-    text?.classList.toggle('hidden', loading);
-    loader?.classList.toggle('hidden', !loading);
-    loadMoreButton.disabled = loading;
+    observer.observe(loadMoreSentinel);
   }
 
   /**
@@ -281,7 +302,6 @@ const {
       toggleLoadMore(false);
     } finally {
       state.isLoading = false;
-      toggleLoadingState(false);
     }
   }
 
@@ -296,15 +316,13 @@ const {
     state.endCursor = null;
     state.currentPage = 1;
 
-    loadPosts(false);
-  }
+    // Reset observer for new filter
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
 
-  /**
-   * Handle load more
-   */
-  function handleLoadMore(): void {
-    toggleLoadingState(true);
-    loadPosts(true);
+    loadPosts(false);
   }
 
   /**
@@ -323,7 +341,6 @@ const {
 
     // Event listeners
     document.addEventListener('blog:filter', handleCategoryFilter);
-    loadMoreButton?.addEventListener('click', handleLoadMore);
     retryButton?.addEventListener('click', handleRetry);
   }
 
@@ -705,35 +722,39 @@ const {
     background: #BA2515;
   }
 
-  /* Load More */
-  .load-more-wrapper {
+  /* Infinite Scroll Sentinel */
+  .load-more-sentinel {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
-    margin-top: 2rem;
-    margin-bottom: 4rem;
+    gap: 0.75rem;
+    padding: 2rem 1rem;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
   }
 
-  .load-more-button {
-    font-family: 'Avenir Next', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .spinner-icon {
     color: #DB4529;
-    background: transparent;
-    border: 2px solid #DB4529;
-    border-radius: 4px;
-    padding: 1rem 3rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    animation: spin 1s linear infinite;
   }
 
-  .load-more-button:hover:not(:disabled) {
-    background: #DB4529;
-    color: #ffffff;
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
-  .load-more-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .loading-text {
+    font-family: 'Avenir Next', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666666;
   }
 
   /* Utility */
@@ -753,7 +774,8 @@ const {
     .skeleton-badge,
     .skeleton-title,
     .skeleton-excerpt,
-    .skeleton-footer {
+    .skeleton-footer,
+    .spinner-icon {
       animation: none;
     }
 

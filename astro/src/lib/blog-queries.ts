@@ -223,52 +223,80 @@ function filterPostsWithFallback(
   return limit ? combinedPosts.slice(0, limit) : combinedPosts;
 }
 
+// Cache for all filtered posts per language/category combination
+const allFilteredPostsCache = new Map<string, BlogPost[]>();
+
 /**
- * Fetch blog posts with caching and language fallback
+ * Fetch blog posts with caching, language fallback, and CLIENT-SIDE pagination
  *
  * NORMA GLOBAL: Siempre devuelve posts, usando español como fallback si el idioma
  * solicitado no tiene suficiente contenido.
+ *
+ * PAGINATION: Fetches all posts once, caches them, and paginates client-side
+ * for accurate hasNextPage calculation after language filtering.
  */
 export async function getBlogPosts(
   variables: BlogQueryVariables = {}
 ): Promise<BlogPostsResponse> {
-  const cacheKey = getCacheKey('GET_POSTS', variables);
-  const cached = getCachedData<BlogPostsResponse>(cacheKey);
+  const requestedLanguage = variables.language || 'ES';
+  const postsPerPage = variables.first || 9;
+  const categoryKey = variables.categoryName || 'all';
+  const allPostsCacheKey = `all_${requestedLanguage}_${categoryKey}`;
 
-  if (cached) {
-    return cached;
+  // Check if we have all filtered posts cached
+  let allFilteredPosts = allFilteredPostsCache.get(allPostsCacheKey);
+
+  if (!allFilteredPosts) {
+    try {
+      // Fetch ALL posts from GraphQL (without language filter)
+      const data = await graphqlQuery<BlogPostsResponse>(GET_POSTS_QUERY, {
+        first: 100,
+        after: null,
+        categoryName: variables.categoryName || null,
+      });
+
+      // Filter by language with Spanish fallback
+      allFilteredPosts = filterPostsWithFallback(
+        data.posts.nodes,
+        requestedLanguage
+      );
+
+      // Cache all filtered posts
+      allFilteredPostsCache.set(allPostsCacheKey, allFilteredPosts);
+
+      // Set cache expiry (5 minutes)
+      setTimeout(() => {
+        allFilteredPostsCache.delete(allPostsCacheKey);
+      }, CACHE_TTL);
+    } catch (error) {
+      console.error('[getBlogPosts] Error:', error);
+      throw error;
+    }
   }
 
-  try {
-    // Obtener TODOS los posts (sin filtro de idioma)
-    const data = await graphqlQuery<BlogPostsResponse>(GET_POSTS_QUERY, {
-      first: 100, // Obtenemos más posts para tener suficientes para filtrar
-      after: variables.after || null,
-      categoryName: variables.categoryName || null,
-    });
+  // Calculate offset based on cursor (cursor = index of last item)
+  const offset = variables.after ? parseInt(variables.after, 10) : 0;
 
-    // Aplicar filtro de idioma con fallback a español
-    const requestedLanguage = variables.language || 'ES';
-    const filteredPosts = filterPostsWithFallback(
-      data.posts.nodes,
-      requestedLanguage,
-      variables.first || 9
-    );
+  // Slice posts for current page
+  const paginatedPosts = allFilteredPosts.slice(offset, offset + postsPerPage);
 
-    // Devolver respuesta con posts filtrados
-    const response: BlogPostsResponse = {
-      posts: {
-        nodes: filteredPosts,
-        pageInfo: data.posts.pageInfo,
+  // Calculate accurate pagination info
+  const nextOffset = offset + postsPerPage;
+  const hasNextPage = nextOffset < allFilteredPosts.length;
+
+  const response: BlogPostsResponse = {
+    posts: {
+      nodes: paginatedPosts,
+      pageInfo: {
+        hasNextPage,
+        hasPreviousPage: offset > 0,
+        startCursor: offset.toString(),
+        endCursor: hasNextPage ? nextOffset.toString() : null,
       },
-    };
+    },
+  };
 
-    setCachedData(cacheKey, response);
-    return response;
-  } catch (error) {
-    console.error('[getBlogPosts] Error:', error);
-    throw error;
-  }
+  return response;
 }
 
 /**
