@@ -1,7 +1,8 @@
 /**
  * WDA-998: Traducciones para tipos de sesión en página de partner
- * Secciones: single, pack, voucher, private
+ * Secciones: single, pack, voucher, gift, private
  * Idiomas: ES, CA, EN, FR
+ * WDA-1033: Added gift session type
  */
 
 import type { SessionType } from '../sessions-queries';
@@ -49,6 +50,10 @@ export const sessionTypesContent: Record<Locale, SessionTypesI18n> = {
         title: 'BONOS',
         subtitle: 'Compra ahora, canjea cuando quieras',
       },
+      gift: {
+        title: 'TARJETAS REGALO',
+        subtitle: 'Regala una experiencia única',
+      },
       private: {
         title: 'SESIONES PRIVADAS',
         subtitle: 'Sauna en exclusiva',
@@ -80,6 +85,10 @@ export const sessionTypesContent: Record<Locale, SessionTypesI18n> = {
       voucher: {
         title: 'BONS',
         subtitle: 'Compra ara, bescanvia quan vulguis',
+      },
+      gift: {
+        title: 'TARGETES REGAL',
+        subtitle: 'Regala una experiència única',
       },
       private: {
         title: 'SESSIONS PRIVADES',
@@ -113,6 +122,10 @@ export const sessionTypesContent: Record<Locale, SessionTypesI18n> = {
         title: 'VOUCHERS',
         subtitle: 'Buy now, redeem anytime',
       },
+      gift: {
+        title: 'GIFT CARDS',
+        subtitle: 'Give a unique experience',
+      },
       private: {
         title: 'PRIVATE SESSIONS',
         subtitle: 'Exclusive sauna use',
@@ -144,6 +157,10 @@ export const sessionTypesContent: Record<Locale, SessionTypesI18n> = {
       voucher: {
         title: 'BONS',
         subtitle: 'Achetez maintenant, utilisez quand vous voulez',
+      },
+      gift: {
+        title: 'CARTES CADEAU',
+        subtitle: 'Offrez une expérience unique',
       },
       private: {
         title: 'SÉANCES PRIVÉES',

@@ -393,9 +393,10 @@ async function getPartnerById(id: number): Promise<WPPartnerNode | null> {
  * - single: Individual sessions (price per person)
  * - pack: Group packs (fixed price for included persons)
  * - voucher: Vouchers/bonuses (N sessions, validity period)
+ * - gift: Gift cards (1 code for N persons, recipient info) - WDA-1033
  * - private: Private sessions (exclusive use)
  */
-export type SessionType = 'single' | 'pack' | 'voucher' | 'private';
+export type SessionType = 'single' | 'pack' | 'voucher' | 'private' | 'gift';
 
 export interface SessionData {
   id: string;
@@ -726,6 +727,8 @@ function mapSessionType(backendType?: string): SessionType {
   if (normalized === 'pack' || normalized === 'group') return 'pack';
   if (normalized === 'voucher' || normalized === 'bono' || normalized === 'bonus') return 'voucher';
   if (normalized === 'private' || normalized === 'privado' || normalized === 'privada') return 'private';
+  // WDA-1033: Gift session type
+  if (normalized === 'gift' || normalized === 'regalo' || normalized === 'regal') return 'gift';
   return 'single'; // Default: individual sessions
 }
 
@@ -840,7 +843,8 @@ export function groupSessionsByType(
   const grouped = new Map<SessionType, SessionData[]>();
 
   // Initialize with empty arrays in display order
-  const displayOrder: SessionType[] = ['single', 'pack', 'voucher', 'private'];
+  // WDA-1033: Added 'gift' to display order
+  const displayOrder: SessionType[] = ['single', 'pack', 'voucher', 'gift', 'private'];
   for (const type of displayOrder) {
     grouped.set(type, []);
   }

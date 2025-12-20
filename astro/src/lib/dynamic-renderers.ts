@@ -22,7 +22,8 @@ import {
 } from './dynamic-content-client';
 
 // Session types for grouping
-type SessionType = 'single' | 'pack' | 'voucher' | 'private';
+// WDA-1033: Added 'gift' session type
+type SessionType = 'single' | 'pack' | 'voucher' | 'private' | 'gift';
 
 // i18n content for session type sections
 const sessionTypesContent: Record<Locale, {
@@ -43,6 +44,7 @@ const sessionTypesContent: Record<Locale, {
       single: { title: 'SESIONES INDIVIDUALES', subtitle: 'Precio por persona' },
       pack: { title: 'PACKS GRUPALES', subtitle: 'Precio fijo para el grupo' },
       voucher: { title: 'BONOS', subtitle: 'Compra ahora, canjea cuando quieras' },
+      gift: { title: 'TARJETAS REGALO', subtitle: 'Regala una experiencia única' },
       private: { title: 'SESIONES PRIVADAS', subtitle: 'Sauna en exclusiva' },
     },
     card: {
@@ -55,6 +57,7 @@ const sessionTypesContent: Record<Locale, {
       single: { title: 'SESSIONS INDIVIDUALS', subtitle: 'Preu per persona' },
       pack: { title: 'PACKS GRUPALS', subtitle: 'Preu fix per al grup' },
       voucher: { title: 'BONS', subtitle: 'Compra ara, bescanvia quan vulguis' },
+      gift: { title: 'TARGETES REGAL', subtitle: 'Regala una experiència única' },
       private: { title: 'SESSIONS PRIVADES', subtitle: 'Sauna en exclusiva' },
     },
     card: {
@@ -67,6 +70,7 @@ const sessionTypesContent: Record<Locale, {
       single: { title: 'INDIVIDUAL SESSIONS', subtitle: 'Price per person' },
       pack: { title: 'GROUP PACKS', subtitle: 'Fixed price for the group' },
       voucher: { title: 'VOUCHERS', subtitle: 'Buy now, redeem anytime' },
+      gift: { title: 'GIFT CARDS', subtitle: 'Give a unique experience' },
       private: { title: 'PRIVATE SESSIONS', subtitle: 'Exclusive sauna use' },
     },
     card: {
@@ -79,6 +83,7 @@ const sessionTypesContent: Record<Locale, {
       single: { title: 'SÉANCES INDIVIDUELLES', subtitle: 'Prix par personne' },
       pack: { title: 'PACKS GROUPES', subtitle: 'Prix fixe pour le groupe' },
       voucher: { title: 'BONS', subtitle: 'Achetez maintenant, utilisez quand vous voulez' },
+      gift: { title: 'CARTES CADEAU', subtitle: 'Offrez une expérience unique' },
       private: { title: 'SÉANCES PRIVÉES', subtitle: 'Sauna en exclusivité' },
     },
     card: {
@@ -565,8 +570,9 @@ function groupSessionsByType(sessions: PublicSessionData[]): Map<SessionType, Pu
   const groups = new Map<SessionType, PublicSessionData[]>();
 
   // Initialize with empty arrays in display order
-  // Order: SINGLE → PACK → VOUCHER (bonos) → PRIVATE
-  const displayOrder: SessionType[] = ['single', 'pack', 'voucher', 'private'];
+  // Order: SINGLE → PACK → VOUCHER (bonos) → GIFT → PRIVATE
+  // WDA-1033: Added 'gift' to display order
+  const displayOrder: SessionType[] = ['single', 'pack', 'voucher', 'gift', 'private'];
   for (const type of displayOrder) {
     groups.set(type, []);
   }

@@ -20,8 +20,9 @@ export type Locale = 'es' | 'ca' | 'en' | 'fr';
  * - pack: Pre-paid pack with fixed number of entries
  * - voucher: Gift voucher (no calendar, generates codes)
  * - private: Private session (full capacity, no quantity selector)
+ * - gift: Gift card (like voucher but with recipient info, generates GIFT-... codes)
  */
-export type SessionType = 'single' | 'pack' | 'voucher' | 'private';
+export type SessionType = 'single' | 'pack' | 'voucher' | 'private' | 'gift';
 
 // =============================================================================
 // SESSION (CPT: sauna_session)
@@ -441,6 +442,103 @@ export interface VoucherRedemptionRequest {
  * Voucher redemption response
  */
 export interface VoucherRedemptionResponse {
+  success: boolean;
+  booking_id?: number;
+  booking_number?: string;
+  ticket_url?: string;
+  error?: string;
+}
+
+// =============================================================================
+// GIFT PURCHASE & REDEMPTION - WDA-1033
+// =============================================================================
+
+/**
+ * Gift recipient information for gift purchases
+ */
+export interface GiftRecipient {
+  name: string;
+  email: string;
+}
+
+/**
+ * Request payload for creating a gift purchase
+ * Similar to CreateBookingRequest but with recipient info
+ * REST API: POST /wp-json/sauwa/v1/book (with is_gift_purchase: true)
+ */
+export interface CreateGiftRequest extends Omit<CreateBookingRequest, 'slot_date' | 'slot_time' | 'attendees'> {
+  /** Flag indicating this is a gift purchase */
+  is_gift_purchase: true;
+  /** Recipient information */
+  recipient: GiftRecipient;
+  /** Optional personalized message for the recipient */
+  gift_message?: string;
+  /** Optional scheduled delivery date (YYYY-MM-DD) */
+  delivery_date?: string;
+}
+
+/**
+ * Response from gift purchase creation
+ */
+export interface CreateGiftResponse {
+  success: boolean;
+  booking_id?: number;
+  booking_number?: string;
+  /** Generated gift code (format: GIFT-YYYY-XXXXXX-ZZZZ) */
+  gift_code?: string;
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Gift validation response
+ * REST API: POST /wp-json/sauwa/v1/gifts/validate
+ */
+export interface GiftValidationResponse {
+  valid: boolean;
+  reason?: string;
+  gift?: {
+    giftCode: string;
+    recipientName: string;
+    expiresAt: string;
+    /** Number of persons included in the gift */
+    includedPersons: number;
+    /** Status of the gift */
+    status: 'active' | 'redeemed' | 'expired';
+    redeemedAt?: string;
+  };
+  /** Session info for the gift (matches backend REST response) */
+  session?: {
+    id: number;
+    title: string;
+    duration: number;
+  };
+}
+
+/**
+ * Request payload for redeeming a gift
+ * Similar to VoucherRedemptionRequest but supports N attendees
+ * REST API: POST /wp-json/sauwa/v1/gifts/redeem
+ */
+export interface GiftRedemptionRequest {
+  /** Gift code (format: GIFT-YYYY-XXXXXX-ZZZZ) */
+  code: string;
+  /** Selected date (YYYY-MM-DD) */
+  slot_date: string;
+  /** Selected time (HH:MM) */
+  slot_time: string;
+  /** Array of N attendees (N = includedPersons from gift) */
+  attendees: VoucherAttendee[];
+  /** Consents */
+  consents: VoucherConsents;
+  /** Language for confirmation emails */
+  language: string;
+}
+
+/**
+ * Response from gift redemption
+ */
+export interface GiftRedemptionResponse {
   success: boolean;
   booking_id?: number;
   booking_number?: string;

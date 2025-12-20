@@ -130,6 +130,22 @@ const translations = {
     // WDA-1004: Private sessions
     privateExclusive: 'Uso exclusivo',
     noPrivateSlots: 'No hay horarios con disponibilidad exclusiva para esta fecha',
+    // WDA-1033: Gift sessions
+    giftInfo: 'Este regalo incluye entrada para {n} personas',
+    giftSuccessTitle: '¡Compra de regalo confirmada!',
+    giftSuccessMessage: 'El destinatario recibirá un email con el código del regalo.',
+    giftCodeTitle: 'Código del regalo',
+    giftCodeNote: 'Guarda este código. El destinatario lo recibirá por email.',
+    giftRecipientSection: 'Datos del destinatario',
+    giftRecipientName: 'Nombre del destinatario',
+    giftRecipientEmail: 'Email del destinatario',
+    giftMessage: 'Mensaje personalizado (opcional)',
+    giftMessagePlaceholder: 'Escribe un mensaje para el destinatario...',
+    giftDeliveryDate: 'Fecha de entrega (opcional)',
+    giftDeliveryNow: 'Enviar ahora',
+    giftDeliveryScheduled: 'Programar envío',
+    giftRecipientNameRequired: 'El nombre del destinatario es obligatorio',
+    giftRecipientEmailRequired: 'El email del destinatario es obligatorio',
   },
   ca: {
     selectDate: 'Selecciona una data',
@@ -228,6 +244,22 @@ const translations = {
     // WDA-1004: Private sessions
     privateExclusive: 'Ús exclusiu',
     noPrivateSlots: 'No hi ha horaris amb disponibilitat exclusiva per aquesta data',
+    // WDA-1033: Gift sessions
+    giftInfo: 'Aquest regal inclou entrada per a {n} persones',
+    giftSuccessTitle: 'Compra de regal confirmada!',
+    giftSuccessMessage: 'El destinatari rebrà un email amb el codi del regal.',
+    giftCodeTitle: 'Codi del regal',
+    giftCodeNote: 'Guarda aquest codi. El destinatari el rebrà per email.',
+    giftRecipientSection: 'Dades del destinatari',
+    giftRecipientName: 'Nom del destinatari',
+    giftRecipientEmail: 'Email del destinatari',
+    giftMessage: 'Missatge personalitzat (opcional)',
+    giftMessagePlaceholder: 'Escriu un missatge per al destinatari...',
+    giftDeliveryDate: 'Data d\'entrega (opcional)',
+    giftDeliveryNow: 'Enviar ara',
+    giftDeliveryScheduled: 'Programar enviament',
+    giftRecipientNameRequired: 'El nom del destinatari és obligatori',
+    giftRecipientEmailRequired: 'L\'email del destinatari és obligatori',
   },
   en: {
     selectDate: 'Select a date',
@@ -326,6 +358,22 @@ const translations = {
     // WDA-1004: Private sessions
     privateExclusive: 'Exclusive use',
     noPrivateSlots: 'No time slots with exclusive availability for this date',
+    // WDA-1033: Gift sessions
+    giftInfo: 'This gift includes entry for {n} people',
+    giftSuccessTitle: 'Gift purchase confirmed!',
+    giftSuccessMessage: 'The recipient will receive an email with the gift code.',
+    giftCodeTitle: 'Gift code',
+    giftCodeNote: 'Save this code. The recipient will receive it by email.',
+    giftRecipientSection: 'Recipient details',
+    giftRecipientName: 'Recipient name',
+    giftRecipientEmail: 'Recipient email',
+    giftMessage: 'Personal message (optional)',
+    giftMessagePlaceholder: 'Write a message for the recipient...',
+    giftDeliveryDate: 'Delivery date (optional)',
+    giftDeliveryNow: 'Send now',
+    giftDeliveryScheduled: 'Schedule delivery',
+    giftRecipientNameRequired: 'Recipient name is required',
+    giftRecipientEmailRequired: 'Recipient email is required',
   },
   fr: {
     selectDate: 'Sélectionnez une date',
@@ -424,6 +472,22 @@ const translations = {
     // WDA-1004: Private sessions
     privateExclusive: 'Usage exclusif',
     noPrivateSlots: 'Aucun horaire avec disponibilité exclusive pour cette date',
+    // WDA-1033: Gift sessions
+    giftInfo: 'Ce cadeau comprend l\'entrée pour {n} personnes',
+    giftSuccessTitle: 'Achat de cadeau confirmé !',
+    giftSuccessMessage: 'Le destinataire recevra un email avec le code du cadeau.',
+    giftCodeTitle: 'Code du cadeau',
+    giftCodeNote: 'Conservez ce code. Le destinataire le recevra par email.',
+    giftRecipientSection: 'Données du destinataire',
+    giftRecipientName: 'Nom du destinataire',
+    giftRecipientEmail: 'Email du destinataire',
+    giftMessage: 'Message personnalisé (optionnel)',
+    giftMessagePlaceholder: 'Écrivez un message pour le destinataire...',
+    giftDeliveryDate: 'Date de livraison (optionnel)',
+    giftDeliveryNow: 'Envoyer maintenant',
+    giftDeliveryScheduled: 'Programmer l\'envoi',
+    giftRecipientNameRequired: 'Le nom du destinataire est obligatoire',
+    giftRecipientEmailRequired: 'L\'email du destinataire est obligatoire',
   },
 };
 
@@ -639,6 +703,86 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         <span class="form-error hidden" role="status" aria-live="polite">{t.phoneInvalid}</span>
       </div>
 
+      <!-- WDA-1033: Gift Recipient Section (hidden by default, shown for gift purchases) -->
+      <div class="gift-recipient-section hidden">
+        <div class="gift-section-header">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gift-icon">
+            <polyline points="20 12 20 22 4 22 4 12"></polyline>
+            <rect x="2" y="7" width="20" height="5"></rect>
+            <line x1="12" y1="22" x2="12" y2="7"></line>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+          </svg>
+          <span class="form-label">{t.giftRecipientSection} <span class="required">*</span></span>
+        </div>
+        <div class="gift-recipient-fields">
+          <!-- Recipient Name -->
+          <div class="form-group">
+            <label for={`recipient-name-${uniqueId}`} class="form-label">
+              {t.giftRecipientName} <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id={`recipient-name-${uniqueId}`}
+              name="recipient_name"
+              class="form-input"
+              autocomplete="name"
+            />
+            <span class="form-error hidden" role="status" aria-live="polite">{t.giftRecipientNameRequired}</span>
+          </div>
+          <!-- Recipient Email -->
+          <div class="form-group">
+            <label for={`recipient-email-${uniqueId}`} class="form-label">
+              {t.giftRecipientEmail} <span class="required">*</span>
+            </label>
+            <input
+              type="email"
+              id={`recipient-email-${uniqueId}`}
+              name="recipient_email"
+              class="form-input"
+              autocomplete="email"
+            />
+            <span class="form-error hidden" role="status" aria-live="polite">{t.giftRecipientEmailRequired}</span>
+          </div>
+          <!-- Gift Message (optional) -->
+          <div class="form-group">
+            <label for={`gift-message-${uniqueId}`} class="form-label">
+              {t.giftMessage}
+            </label>
+            <textarea
+              id={`gift-message-${uniqueId}`}
+              name="gift_message"
+              class="form-textarea"
+              rows="3"
+              placeholder={t.giftMessagePlaceholder}
+            ></textarea>
+          </div>
+          <!-- Delivery Date (optional) -->
+          <div class="form-group">
+            <label class="form-label">{t.giftDeliveryDate}</label>
+            <div class="gift-delivery-options">
+              <label class="radio-label">
+                <input type="radio" name="delivery_option" value="now" checked class="radio-input" />
+                <span class="radio-text">{t.giftDeliveryNow}</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="delivery_option" value="scheduled" class="radio-input" />
+                <span class="radio-text">{t.giftDeliveryScheduled}</span>
+              </label>
+            </div>
+            <div class="gift-delivery-date-picker hidden">
+              <input
+                type="date"
+                id={`delivery-date-${uniqueId}`}
+                name="delivery_date"
+                class="form-input"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- WDA-909: Attendees Section - Dynamic list of attendees -->
       <div class="attendees-section">
         <div class="attendees-header">
@@ -805,6 +949,15 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           <h4 class="voucher-codes-title">{t.voucherCodesTitle}</h4>
           <div class="voucher-codes-list"></div>
           <p class="voucher-codes-note">{t.voucherCodesNote}</p>
+        </div>
+
+        <!-- WDA-1033: Gift Code (shown for gift purchases) -->
+        <div class="gift-code-section hidden">
+          <h4 class="gift-code-title">{t.giftCodeTitle}</h4>
+          <div class="gift-code-display">
+            <code class="gift-code"></code>
+          </div>
+          <p class="gift-code-note">{t.giftCodeNote}</p>
         </div>
 
         <button type="button" class="new-booking-button" data-action="new-booking">
@@ -2055,6 +2208,122 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     margin: 1rem 0 0;
   }
 
+  /* WDA-1033: Gift Recipient Section */
+  .gift-recipient-section {
+    background: linear-gradient(135deg, #fce7f3, #fdf2f8);
+    border: 2px solid #ec4899;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .gift-recipient-section.hidden {
+    display: none;
+  }
+
+  .gift-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .gift-icon {
+    width: 24px;
+    height: 24px;
+    color: #ec4899;
+  }
+
+  .gift-recipient-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .gift-delivery-options {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+  }
+
+  .radio-input {
+    width: 18px;
+    height: 18px;
+    accent-color: #ec4899;
+  }
+
+  .radio-text {
+    font-size: 0.875rem;
+    color: var(--booking-gray-700);
+  }
+
+  .gift-delivery-date-picker {
+    margin-top: 0.5rem;
+  }
+
+  .gift-delivery-date-picker.hidden {
+    display: none;
+  }
+
+  /* WDA-1033: Gift Code Section (confirmation) */
+  .gift-code-section {
+    background: linear-gradient(135deg, #fce7f3, #fdf2f8);
+    border: 2px solid #ec4899;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .gift-code-section.hidden {
+    display: none;
+  }
+
+  .gift-code-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--booking-gray-900);
+    margin: 0 0 1rem;
+  }
+
+  .gift-code-display {
+    background: white;
+    border: 1px solid var(--booking-gray-200);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+
+  .gift-code {
+    font-family: 'Courier New', monospace;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ec4899;
+    letter-spacing: 0.05em;
+  }
+
+  .gift-code-note {
+    font-size: 0.875rem;
+    color: var(--booking-gray-500);
+    margin: 1rem 0 0;
+  }
+
+  /* WDA-1033: Session type info for gift */
+  .session-type-info[data-session-type="gift"] {
+    background: #fdf2f8;
+    border-color: #ec4899;
+  }
+
+  .session-type-info[data-session-type="gift"] .info-icon {
+    color: #ec4899;
+  }
+
   /* ============================================
      LOADING STATES
      ============================================ */
@@ -2221,9 +2490,9 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     rateLimitUntil: number | null;
     rateLimitCountdown: number;
     // WDA-974: Session type support
-    sessionType: 'single' | 'pack' | 'voucher' | 'private';
+    sessionType: 'single' | 'pack' | 'voucher' | 'private' | 'gift';
     includedPersons: number | null;
-    // WDA-1008: Voucher validity from backend
+    // WDA-1008: Voucher validity from backend (also used for gift)
     voucherValidityMonths: number;
   }
 
@@ -2249,7 +2518,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         // WDA-974: Default to single type (backward compatible)
         sessionType: 'single',
         includedPersons: null,
-        // WDA-1008: Default voucher validity
+        // WDA-1008: Default voucher validity (also used for gift)
         voucherValidityMonths: 12,
       };
 
@@ -2317,6 +2586,20 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           attendeeEmailInput.value = customerEmailInput.value;
         }
       });
+
+      // WDA-1033: Gift delivery date toggle
+      const deliveryOptions = this.widget.querySelectorAll('input[name="delivery_option"]');
+      const deliveryDatePicker = this.widget.querySelector('.gift-delivery-date-picker');
+      deliveryOptions.forEach((radio) => {
+        radio.addEventListener('change', (e) => {
+          const value = (e.target as HTMLInputElement).value;
+          if (value === 'scheduled') {
+            deliveryDatePicker?.classList.remove('hidden');
+          } else {
+            deliveryDatePicker?.classList.add('hidden');
+          }
+        });
+      });
     }
 
     private handleAction(action: string): void {
@@ -2368,7 +2651,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           const rawType = sessionDetails.sessionType;
           this.state.sessionType = Array.isArray(rawType) ? rawType[0] : (rawType || 'single');
           this.state.includedPersons = sessionDetails.includedPersons || null;
-          // WDA-1008: Store voucher validity months for display
+          // WDA-1008: Store voucher validity months for display (also used for gift)
           this.state.voucherValidityMonths = sessionDetails.voucherValidityMonths || 12;
 
           // Update UI based on session type
@@ -2432,6 +2715,56 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         this.showStep('form');
       }
 
+      // WDA-1033: Gift purchases - similar to vouchers but with recipient section
+      if (sessionType === 'gift') {
+        // Hide calendar and slots steps
+        const calendarStep = this.widget.querySelector('[data-step="calendar"]');
+        const slotsStep = this.widget.querySelector('[data-step="slots"]');
+        calendarStep?.classList.add('hidden');
+        slotsStep?.classList.add('hidden');
+
+        // Hide progress indicators for calendar/slots (steps 1 and 2)
+        const calendarProgress = this.widget.querySelector('[data-step-index="0"]');
+        const slotsProgress = this.widget.querySelector('[data-step-index="1"]');
+        const connector1 = calendarProgress?.nextElementSibling;
+        const connector2 = slotsProgress?.nextElementSibling;
+        calendarProgress?.classList.add('hidden');
+        slotsProgress?.classList.add('hidden');
+        connector1?.classList.add('hidden');
+        connector2?.classList.add('hidden');
+
+        // Hide "Cambiar horario" button - gifts don't have time slots
+        const changeSlotBtn = this.widget.querySelector('[data-action="back-to-slots"]');
+        changeSlotBtn?.classList.add('hidden');
+
+        // Hide selection summary (date/time) - not applicable for gifts
+        const selectionSummary = this.widget.querySelector('.selection-summary');
+        selectionSummary?.classList.add('hidden');
+
+        // Hide attendees section - gifts are purchased, recipient redeems later
+        const attendeesSection = this.widget.querySelector('.attendees-section');
+        attendeesSection?.classList.add('hidden');
+
+        // Show recipient section for gifts
+        const recipientSection = this.widget.querySelector('.gift-recipient-section');
+        recipientSection?.classList.remove('hidden');
+
+        // Renumber visible progress steps (form becomes step 1, confirmation step 2)
+        const formProgress = this.widget.querySelector('[data-step-index="2"]');
+        const confirmProgress = this.widget.querySelector('[data-step-index="3"]');
+        if (formProgress) {
+          const stepNumber = formProgress.querySelector('.step-number');
+          if (stepNumber) stepNumber.textContent = '1';
+        }
+        if (confirmProgress) {
+          const stepNumber = confirmProgress.querySelector('.step-number');
+          if (stepNumber) stepNumber.textContent = '2';
+        }
+
+        // Show form directly
+        this.showStep('form');
+      }
+
       // Show info banner for pack, voucher, or private types
       if (sessionType !== 'single' && infoBanner && infoBannerText) {
         infoBanner.setAttribute('data-session-type', sessionType);
@@ -2453,6 +2786,9 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           infoText = translations.privateInfo;
           // For private sessions, allow flexible attendee count up to max
           // No pre-population needed
+        } else if (sessionType === 'gift' && includedPersons) {
+          // WDA-1033: Gift info text
+          infoText = translations.giftInfo.replace('{n}', String(includedPersons));
         }
 
         infoBannerText.textContent = infoText;
@@ -3197,6 +3533,8 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
 
       // WDA-1003: Vouchers don't have date/slot selection - they are purchased for future redemption
       const isVoucherPurchase = this.state.sessionType === 'voucher';
+      // WDA-1033: Gifts have their own purchase flow with recipient info
+      const isGiftPurchase = this.state.sessionType === 'gift';
 
       // Backend requires date/time even for vouchers (since v1.5.0)
       // For vouchers, send placeholder values - the is_voucher_purchase flag tells backend not to reserve inventory
@@ -3205,6 +3543,56 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         tomorrow.setDate(tomorrow.getDate() + 1);
         return tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
       };
+
+      // WDA-1033: Handle gift purchase separately
+      if (isGiftPurchase) {
+        const recipientName = formData.get('recipient_name') as string;
+        const recipientEmail = formData.get('recipient_email') as string;
+        const giftMessage = formData.get('gift_message') as string || undefined;
+        const deliveryOption = formData.get('delivery_option') as string;
+        const deliveryDate = deliveryOption === 'scheduled'
+          ? (formData.get('delivery_date') as string || undefined)
+          : undefined;
+
+        const giftData = {
+          session_id: this.state.sessionId,
+          customer_name: formData.get('customer_name') as string,
+          customer_email: formData.get('customer_email') as string,
+          customer_phone: formData.get('customer_phone') as string || undefined,
+          recipient: {
+            name: recipientName,
+            email: recipientEmail,
+          },
+          gift_message: giftMessage,
+          delivery_date: deliveryDate,
+          language: language,
+        };
+
+        try {
+          // Import createGift dynamically to avoid circular dependencies
+          const { createGift } = await import('../../lib/booking/api');
+          const result = await createGift(giftData);
+
+          if (result.success) {
+            this.showGiftConfirmation(result);
+          } else {
+            if (errorText) {
+              errorText.textContent = this.translateError(result.error || '');
+            }
+            errorMessage?.classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('[BookingWidget] Gift purchase error:', error);
+          if (errorText) {
+            errorText.textContent = this.state.translations.errorGeneric;
+          }
+          errorMessage?.classList.remove('hidden');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('submitting');
+        }
+        return;
+      }
 
       const bookingData: CreateBookingRequest = {
         session_id: this.state.sessionId,
@@ -3359,6 +3747,25 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
       } else if (!emailRegex.test(emailInput.value)) {
         this.showFieldError(emailInput, translations.emailInvalid);
         isValid = false;
+      }
+
+      // WDA-1033: Gift recipient validation
+      if (this.state.sessionType === 'gift') {
+        const recipientNameInput = form.querySelector('input[name="recipient_name"]') as HTMLInputElement;
+        const recipientEmailInput = form.querySelector('input[name="recipient_email"]') as HTMLInputElement;
+
+        if (!recipientNameInput?.value.trim()) {
+          this.showFieldError(recipientNameInput, translations.giftRecipientNameRequired);
+          isValid = false;
+        }
+
+        if (!recipientEmailInput?.value.trim()) {
+          this.showFieldError(recipientEmailInput, translations.giftRecipientEmailRequired);
+          isValid = false;
+        } else if (!emailRegex.test(recipientEmailInput.value)) {
+          this.showFieldError(recipientEmailInput, translations.emailInvalid);
+          isValid = false;
+        }
       }
 
       // Privacy
@@ -3516,6 +3923,45 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
             confirmedAttendees.textContent = String(this.state.attendeeCount);
           }
         }
+
+        successEl?.classList.remove('hidden');
+        errorEl?.classList.add('hidden');
+      } else {
+        successEl?.classList.add('hidden');
+        errorEl?.classList.remove('hidden');
+      }
+
+      this.showStep('confirmation');
+    }
+
+    // WDA-1033: Gift purchase confirmation
+    private showGiftConfirmation(result: { success: boolean; gift_code?: string; error?: string }): void {
+      const successEl = this.widget.querySelector('.confirmation-success');
+      const errorEl = this.widget.querySelector('.confirmation-error');
+      const { translations } = this.state;
+
+      if (result.success && result.gift_code) {
+        // Update titles for gift purchases
+        const successTitle = this.widget.querySelector('.success-title');
+        const successMessage = this.widget.querySelector('.success-message');
+        if (successTitle && successMessage) {
+          successTitle.textContent = translations.giftSuccessTitle;
+          successMessage.textContent = translations.giftSuccessMessage;
+        }
+
+        // Hide regular booking details
+        const regularDetails = this.widget.querySelector('.booking-details--regular');
+        const voucherSection = this.widget.querySelector('.voucher-codes-section');
+        regularDetails?.classList.add('hidden');
+        voucherSection?.classList.add('hidden');
+
+        // Show gift code section
+        const giftSection = this.widget.querySelector('.gift-code-section');
+        const giftCodeEl = this.widget.querySelector('.gift-code');
+        if (giftCodeEl) {
+          giftCodeEl.textContent = result.gift_code;
+        }
+        giftSection?.classList.remove('hidden');
 
         successEl?.classList.remove('hidden');
         errorEl?.classList.add('hidden');

@@ -90,6 +90,14 @@ export const ROUTE_TRANSLATIONS: Record<string, Record<Locale, string>> = {
     en: '/session/',
     fr: '/seance/',
   },
+
+  // WDA-1033: Gift redemption pages
+  'gift-redemption': {
+    es: '/canjear-regalo/',
+    ca: '/bescanviar-regal/',
+    en: '/redeem-gift/',
+    fr: '/echanger-cadeau/',
+  },
 };
 
 /**
@@ -143,6 +151,12 @@ export const SLUG_TO_ROUTE: Record<string, string> = {
   '/portes-obertes/': 'puertas-abiertas',
   '/open-days/': 'puertas-abiertas',
   '/portes-ouvertes/': 'puertas-abiertas',
+
+  // WDA-1033: Gift Redemption
+  '/canjear-regalo/': 'gift-redemption',
+  '/bescanviar-regal/': 'gift-redemption',
+  '/redeem-gift/': 'gift-redemption',
+  '/echanger-cadeau/': 'gift-redemption',
 };
 
 /**

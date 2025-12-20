@@ -1,0 +1,234 @@
+---
+/**
+ * WDA-1033: Gift Redemption Page - FR
+ * Page for redeeming purchased gift sessions
+ * WDA-1033-UX: Updated to match SAUWA design system
+ */
+
+import Layout from '../../layouts/Layout.astro';
+import NavbarScroll from '../../components/NavbarScroll.astro';
+import FooterBlack from '../../components/layout/FooterBlack.astro';
+import GiftRedemptionFlow from '../../components/gift/GiftRedemptionFlow.astro';
+
+const locale = 'fr';
+
+const seoTitle = 'Échanger cadeau | SAUWA SAUNA ANDORRA';
+const seoDescription = 'Échangez votre cadeau SAUWA SAUNA. Entrez votre code cadeau et réservez votre séance de sauna finlandais en Andorre.';
+
+const ctaText = 'Échanger le code';
+---
+
+<Layout title={seoTitle} description={seoDescription} lang={locale} pageType="gift-redemption">
+  <NavbarScroll locale={locale} />
+
+  <main class="gift-page">
+    <!-- Hero Section - Styled like SessionHero -->
+    <section class="gift-hero">
+      <div class="gift-hero__overlay"></div>
+      <div class="gift-hero__content">
+        <h1 class="gift-hero__title-seo">Expérience SAUWA</h1>
+        <h2 class="gift-hero__heading">Échanger votre cadeau</h2>
+        <p class="gift-hero__subtitle">
+          Entrez votre code cadeau et réservez votre expérience de sauna finlandais
+        </p>
+      </div>
+      <!-- Anchor CTA -->
+      <a href="#echanger" class="gift-hero__cta" aria-label={ctaText}>
+        <span class="gift-hero__cta-text">{ctaText}</span>
+        <svg
+          class="gift-hero__cta-icon"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 5L12 19M12 19L19 12M12 19L5 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+    </section>
+
+    <!-- Redemption Flow -->
+    <section id="echanger" class="redemption-section">
+      <GiftRedemptionFlow locale={locale} />
+    </section>
+  </main>
+
+  <FooterBlack locale={locale} />
+</Layout>
+
+<style>
+  .gift-page {
+    min-height: 100vh;
+  }
+
+  /* ==============================================
+     HERO SECTION - Matches SessionHero styles
+     ============================================== */
+  .gift-hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for iOS Safari */
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #887161;
+  }
+
+  .gift-hero__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.3) 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    z-index: 1;
+  }
+
+  .gift-hero__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+    gap: 1rem;
+  }
+
+  .gift-hero__title-seo {
+    font-family: 'Avenir Next', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+  }
+
+  .gift-hero__heading {
+    font-family: 'Helvetica Neue', 'Avenir Next', sans-serif;
+    font-weight: 100;
+    font-size: 56px;
+    line-height: 1.2;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .gift-hero__subtitle {
+    font-family: 'Avenir Next', sans-serif;
+    font-weight: 300;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    max-width: 600px;
+  }
+
+  .gift-hero__cta {
+    position: absolute;
+    bottom: 2rem;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: max-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    cursor: pointer;
+    z-index: 3;
+    animation: bounce 2s infinite;
+  }
+
+  .gift-hero__cta:hover {
+    transform: translateY(4px);
+    opacity: 0.9;
+  }
+
+  .gift-hero__cta:focus-visible {
+    outline: 2px solid #DB4529;
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  .gift-hero__cta-text {
+    font-family: 'Avenir Next', 'Avenir', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .gift-hero__cta-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+  }
+
+  .redemption-section {
+    background: #F9FAFB;
+    padding: 4rem 2rem;
+    min-height: 600px;
+  }
+
+  @media (max-width: 767px) {
+    .gift-hero { min-height: 500px; }
+    .gift-hero__content { padding: 0 1.5rem; }
+    .gift-hero__title-seo { font-size: 16px; letter-spacing: 3px; }
+    .gift-hero__heading { font-size: 40px; font-weight: 300; }
+    .gift-hero__subtitle { font-size: 1rem; }
+    .redemption-section { padding: 2rem 1rem; }
+  }
+
+  @media (max-width: 640px) {
+    .gift-hero__title-seo { font-size: 14px; letter-spacing: 2px; }
+    .gift-hero__heading { font-size: 32px; line-height: 1.25; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gift-hero__cta { animation: none; }
+    .gift-hero__cta:hover { transform: none; }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const ctaButton = document.querySelector('.gift-hero__cta');
+    ctaButton?.addEventListener('click', (e) => {
+      const href = ctaButton.getAttribute('href');
+      if (href?.startsWith('#')) {
+        e.preventDefault();
+        document.getElementById(href.substring(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
