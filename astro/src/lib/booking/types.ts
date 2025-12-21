@@ -454,6 +454,14 @@ export interface VoucherRedemptionResponse {
 // =============================================================================
 
 /**
+ * Delivery option for gift purchases
+ * - immediate: Send gift email immediately upon purchase
+ * - scheduled: Send gift email on a specific date and time
+ * - no_send: Don't send to recipient, buyer will deliver personally
+ */
+export type DeliveryOption = 'immediate' | 'scheduled' | 'no_send';
+
+/**
  * Gift recipient information for gift purchases
  */
 export interface GiftRecipient {
@@ -473,8 +481,14 @@ export interface CreateGiftRequest extends Omit<CreateBookingRequest, 'slot_date
   recipient: GiftRecipient;
   /** Optional personalized message for the recipient */
   gift_message?: string;
-  /** Optional scheduled delivery date (YYYY-MM-DD) */
+  /** Delivery option: immediate, scheduled, or no_send */
+  delivery_option: DeliveryOption;
+  /** Optional scheduled delivery date (YYYY-MM-DD) - only for 'scheduled' option */
   delivery_date?: string;
+  /** Optional scheduled delivery time (HH:MM) - only for 'scheduled' option */
+  delivery_time?: string;
+  /** Optional buyer notes (additional notes from buyer) */
+  buyer_notes?: string;
 }
 
 /**

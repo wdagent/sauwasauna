@@ -144,6 +144,9 @@ const translations = {
     giftDeliveryDate: 'Fecha de entrega (opcional)',
     giftDeliveryNow: 'Enviar ahora',
     giftDeliveryScheduled: 'Programar envío',
+    giftDeliveryNoSend: 'No enviar (entrega en mano)',
+    giftDeliveryTime: 'Hora de envío',
+    giftNoSendMessage: 'El código de regalo te llegará a ti. Podrás entregarlo personalmente.',
     giftRecipientNameRequired: 'El nombre del destinatario es obligatorio',
     giftRecipientEmailRequired: 'El email del destinatario es obligatorio',
   },
@@ -258,6 +261,9 @@ const translations = {
     giftDeliveryDate: 'Data d\'entrega (opcional)',
     giftDeliveryNow: 'Enviar ara',
     giftDeliveryScheduled: 'Programar enviament',
+    giftDeliveryNoSend: 'No enviar (entrega en mà)',
+    giftDeliveryTime: 'Hora d\'enviament',
+    giftNoSendMessage: 'El codi de regal t\'arribarà a tu. Podràs entregar-lo personalment.',
     giftRecipientNameRequired: 'El nom del destinatari és obligatori',
     giftRecipientEmailRequired: 'L\'email del destinatari és obligatori',
   },
@@ -372,6 +378,9 @@ const translations = {
     giftDeliveryDate: 'Delivery date (optional)',
     giftDeliveryNow: 'Send now',
     giftDeliveryScheduled: 'Schedule delivery',
+    giftDeliveryNoSend: 'Don\'t send (hand delivery)',
+    giftDeliveryTime: 'Delivery time',
+    giftNoSendMessage: 'The gift code will be sent to you. You can deliver it personally.',
     giftRecipientNameRequired: 'Recipient name is required',
     giftRecipientEmailRequired: 'Recipient email is required',
   },
@@ -486,6 +495,9 @@ const translations = {
     giftDeliveryDate: 'Date de livraison (optionnel)',
     giftDeliveryNow: 'Envoyer maintenant',
     giftDeliveryScheduled: 'Programmer l\'envoi',
+    giftDeliveryNoSend: 'Ne pas envoyer (remise en main)',
+    giftDeliveryTime: 'Heure d\'envoi',
+    giftNoSendMessage: 'Le code cadeau vous sera envoyé. Vous pourrez le remettre personnellement.',
     giftRecipientNameRequired: 'Le nom du destinataire est obligatoire',
     giftRecipientEmailRequired: 'L\'email du destinataire est obligatoire',
   },
@@ -762,22 +774,40 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
             <label class="form-label">{t.giftDeliveryDate}</label>
             <div class="gift-delivery-options">
               <label class="radio-label">
-                <input type="radio" name="delivery_option" value="now" checked class="radio-input" />
+                <input type="radio" name="delivery_option" value="immediate" checked class="radio-input" />
                 <span class="radio-text">{t.giftDeliveryNow}</span>
               </label>
               <label class="radio-label">
                 <input type="radio" name="delivery_option" value="scheduled" class="radio-input" />
                 <span class="radio-text">{t.giftDeliveryScheduled}</span>
               </label>
+              <label class="radio-label">
+                <input type="radio" name="delivery_option" value="no_send" class="radio-input" />
+                <span class="radio-text">{t.giftDeliveryNoSend}</span>
+              </label>
             </div>
-            <div class="gift-delivery-date-picker hidden">
-              <input
-                type="date"
-                id={`delivery-date-${uniqueId}`}
-                name="delivery_date"
-                class="form-input"
-                min={new Date().toISOString().split('T')[0]}
-              />
+            <!-- Scheduled delivery: date + time -->
+            <div class="gift-delivery-scheduled-picker hidden">
+              <div class="delivery-datetime-row">
+                <input
+                  type="date"
+                  id={`delivery-date-${uniqueId}`}
+                  name="delivery_date"
+                  class="form-input delivery-date-input"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <input
+                  type="time"
+                  id={`delivery-time-${uniqueId}`}
+                  name="delivery_time"
+                  class="form-input delivery-time-input"
+                  value="09:00"
+                />
+              </div>
+            </div>
+            <!-- No send message -->
+            <div class="gift-no-send-message hidden">
+              <p class="info-message">{t.giftNoSendMessage}</p>
             </div>
           </div>
         </div>
@@ -2264,12 +2294,43 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     color: var(--booking-gray-700);
   }
 
-  .gift-delivery-date-picker {
-    margin-top: 0.5rem;
+  .gift-delivery-scheduled-picker {
+    margin-top: 0.75rem;
   }
 
-  .gift-delivery-date-picker.hidden {
+  .gift-delivery-scheduled-picker.hidden {
     display: none;
+  }
+
+  .delivery-datetime-row {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .delivery-datetime-row .delivery-date-input {
+    flex: 1;
+  }
+
+  .delivery-datetime-row .delivery-time-input {
+    width: 120px;
+  }
+
+  .gift-no-send-message {
+    margin-top: 0.75rem;
+  }
+
+  .gift-no-send-message.hidden {
+    display: none;
+  }
+
+  .gift-no-send-message .info-message {
+    background: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #92400e;
+    margin: 0;
   }
 
   /* WDA-1033: Gift Code Section (confirmation) */
@@ -2587,17 +2648,26 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         }
       });
 
-      // WDA-1033: Gift delivery date toggle
+      // WDA-1033: Gift delivery option toggle (immediate, scheduled, no_send)
       const deliveryOptions = this.widget.querySelectorAll('input[name="delivery_option"]');
-      const deliveryDatePicker = this.widget.querySelector('.gift-delivery-date-picker');
+      const scheduledPicker = this.widget.querySelector('.gift-delivery-scheduled-picker');
+      const noSendMessage = this.widget.querySelector('.gift-no-send-message');
+
       deliveryOptions.forEach((radio) => {
         radio.addEventListener('change', (e) => {
           const value = (e.target as HTMLInputElement).value;
+
+          // Hide all conditional elements first
+          scheduledPicker?.classList.add('hidden');
+          noSendMessage?.classList.add('hidden');
+
+          // Show relevant element based on selection
           if (value === 'scheduled') {
-            deliveryDatePicker?.classList.remove('hidden');
-          } else {
-            deliveryDatePicker?.classList.add('hidden');
+            scheduledPicker?.classList.remove('hidden');
+          } else if (value === 'no_send') {
+            noSendMessage?.classList.remove('hidden');
           }
+          // 'immediate' shows nothing extra
         });
       });
     }
@@ -3549,9 +3619,19 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         const recipientName = formData.get('recipient_name') as string;
         const recipientEmail = formData.get('recipient_email') as string;
         const giftMessage = formData.get('gift_message') as string || undefined;
-        const deliveryOption = formData.get('delivery_option') as string;
+        const buyerNotes = formData.get('notes') as string || undefined;
+
+        // Get delivery option (immediate, scheduled, no_send)
+        const deliveryOptionValue = formData.get('delivery_option') as string;
+        // Map 'now' to 'immediate' for backward compatibility, keep others as-is
+        const deliveryOption = deliveryOptionValue === 'now' ? 'immediate' : deliveryOptionValue;
+
+        // Only get date/time if scheduled
         const deliveryDate = deliveryOption === 'scheduled'
           ? (formData.get('delivery_date') as string || undefined)
+          : undefined;
+        const deliveryTime = deliveryOption === 'scheduled'
+          ? (formData.get('delivery_time') as string || undefined)
           : undefined;
 
         const giftData = {
@@ -3564,7 +3644,10 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
             email: recipientEmail,
           },
           gift_message: giftMessage,
+          buyer_notes: buyerNotes,
+          delivery_option: deliveryOption,
           delivery_date: deliveryDate,
+          delivery_time: deliveryTime,
           language: language,
         };
 
