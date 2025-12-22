@@ -33,6 +33,10 @@ export type {
   BookingAttendee,
   CreateBookingRequest,
   CreateBookingResponse,
+  // Gift (WDA-1033, WDA-1034)
+  DeliveryOption,
+  PurchaseGiftRequest,
+  PurchaseGiftResponse,
   // UI State
   BookingWidgetState,
   CustomerFormData,
@@ -53,6 +57,8 @@ export {
   getDaySlots,
   // Booking creation
   createBooking,
+  // Gift purchase (WDA-1034)
+  purchaseGift,
   // Cache management
   clearBookingCache,
   // Utilities

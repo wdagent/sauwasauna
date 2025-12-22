@@ -470,11 +470,63 @@ export interface GiftRecipient {
 }
 
 /**
- * Request payload for creating a gift purchase
- * Similar to CreateBookingRequest but with recipient info
- * REST API: POST /wp-json/sauwa/v1/book (with is_gift_purchase: true)
+ * Request payload for gift purchase via dedicated endpoint
+ * REST API: POST /wp-json/sauwa/v1/gifts/purchase (WDA-1034)
+ * Clean interface - no workaround fields needed
  */
-export interface CreateGiftRequest extends Omit<CreateBookingRequest, 'slot_date' | 'slot_time' | 'attendees'> {
+export interface PurchaseGiftRequest {
+  /** Session post ID */
+  session_id: number;
+  /** Buyer full name */
+  customer_name: string;
+  /** Buyer email */
+  customer_email: string;
+  /** Buyer phone (optional) */
+  customer_phone?: string;
+  /** Recipient information */
+  recipient: GiftRecipient;
+  /** Optional personalized message for the recipient */
+  gift_message?: string;
+  /** Delivery option: immediate, scheduled, or no_send */
+  delivery_option: DeliveryOption;
+  /** Optional scheduled delivery date (YYYY-MM-DD) - only for 'scheduled' option */
+  delivery_date?: string;
+  /** Optional scheduled delivery time (HH:MM) - only for 'scheduled' option */
+  delivery_time?: string;
+  /** Optional buyer notes */
+  buyer_notes?: string;
+  /** Language for emails (ES, CA, EN, FR) */
+  language?: string;
+  /** Buyer consents (privacy, terms) */
+  consents: {
+    privacy: boolean;
+    terms: boolean;
+  };
+}
+
+/**
+ * Response from gift purchase
+ */
+export interface PurchaseGiftResponse {
+  success: boolean;
+  booking_id?: number;
+  booking_number?: string;
+  /** Generated gift code (format: GIFT-YYYY-XXXXXX-ZZZZ) */
+  gift_code?: string;
+  /** Expiration date of the gift */
+  expires_at?: string;
+  /** Total amount charged */
+  total_amount?: number;
+  message?: string;
+  error?: string;
+}
+
+/**
+ * @deprecated Use PurchaseGiftRequest with purchaseGift() instead
+ * Legacy request for /book endpoint workaround
+ * TODO: Remove when all clients migrate to /gifts/purchase
+ */
+export interface CreateGiftRequest extends Omit<CreateBookingRequest, 'is_voucher_purchase'> {
   /** Flag indicating this is a gift purchase */
   is_gift_purchase: true;
   /** Recipient information */

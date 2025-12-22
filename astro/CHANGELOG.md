@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - WDA-1034: Gift Purchase Dedicated Endpoint
+
+- **New `purchaseGift()` API function**
+  - Calls dedicated `/sauwa/v1/gifts/purchase` endpoint
+  - Clean interface without workaround fields (no attendees, slot_date, slot_time)
+  - Sends `consents` object for GDPR compliance
+  - Files: `src/lib/booking/api.ts`, `src/lib/booking/types.ts`
+
+- **New TypeScript interfaces**
+  - `PurchaseGiftRequest` - Clean request payload for gift purchases
+  - `PurchaseGiftResponse` - Response with gift_code, booking_id, etc.
+  - Deprecated `CreateGiftRequest` (legacy workaround)
+
+- **BookingWidget updated**
+  - Uses `purchaseGift()` instead of `createGift()`
+  - Simplified `giftData` object without placeholder fields
+  - Adds `consents: { privacy: true, terms: true }` to request
+
+- **Barrel exports updated**
+  - `src/lib/booking/index.ts` exports new types and function
+
+### Fixed - WDA-1035: Gift Sessions Self-Contained
+
+- Backend now supports gift sessions without `base_session_id`
+- Gift uses its own properties (duration, capacity, price)
+- No slot reservation at purchase time (only at redemption)
+
 ## [1.5.0] - 2025-12-16
 
 ### Added - Blog Infinite Scroll

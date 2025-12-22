@@ -494,15 +494,53 @@ export async function redeemVoucher(
 }
 
 // =============================================================================
-// GIFT PURCHASE & REDEMPTION - WDA-1033
+// GIFT PURCHASE & REDEMPTION - WDA-1033, WDA-1034
 // =============================================================================
 
 /**
- * Create a gift purchase
- * REST API: POST /wp-json/sauwa/v1/book (with is_gift_purchase: true)
+ * Purchase a gift via dedicated endpoint
+ * REST API: POST /wp-json/sauwa/v1/gifts/purchase (WDA-1034)
  * NOT cached - always hits server
  *
- * @param data - Gift purchase request data
+ * @param data - Gift purchase request data (clean, no workaround fields)
+ */
+export async function purchaseGift(
+  data: import('./types').PurchaseGiftRequest
+): Promise<import('./types').PurchaseGiftResponse> {
+  try {
+    const response = await fetch(`${BOOKING_CONFIG.restEndpoint}/gifts/purchase`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: result.message || result.error || `Request failed: ${response.status}`,
+      };
+    }
+
+    return result;
+  } catch (error) {
+    console.error('[Booking API] purchaseGift error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+}
+
+/**
+ * @deprecated Use purchaseGift() instead - calls new /gifts/purchase endpoint
+ * Legacy function using /book endpoint workaround
+ * TODO: Remove when all clients migrate to purchaseGift()
+ *
+ * @param data - Gift purchase request data (with workaround fields)
  */
 export async function createGift(
   data: import('./types').CreateGiftRequest

@@ -2533,6 +2533,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     TimeSlot,
     DayAvailability,
     CreateBookingRequest,
+    DeliveryOption,
   } from '../../lib/booking';
 
   interface WidgetState {
@@ -3624,7 +3625,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         // Get delivery option (immediate, scheduled, no_send)
         const deliveryOptionValue = formData.get('delivery_option') as string;
         // Map 'now' to 'immediate' for backward compatibility, keep others as-is
-        const deliveryOption = deliveryOptionValue === 'now' ? 'immediate' : deliveryOptionValue;
+        const deliveryOption = (deliveryOptionValue === 'now' ? 'immediate' : deliveryOptionValue) as DeliveryOption;
 
         // Only get date/time if scheduled
         const deliveryDate = deliveryOption === 'scheduled'
@@ -3634,6 +3635,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           ? (formData.get('delivery_time') as string || undefined)
           : undefined;
 
+        // WDA-1034: Clean gift purchase data for dedicated endpoint
         const giftData = {
           session_id: this.state.sessionId,
           customer_name: formData.get('customer_name') as string,
@@ -3649,12 +3651,16 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           delivery_date: deliveryDate,
           delivery_time: deliveryTime,
           language: language,
+          consents: {
+            privacy: true,
+            terms: true,
+          },
         };
 
         try {
-          // Import createGift dynamically to avoid circular dependencies
-          const { createGift } = await import('../../lib/booking/api');
-          const result = await createGift(giftData);
+          // WDA-1034: Use dedicated /gifts/purchase endpoint
+          const { purchaseGift } = await import('../../lib/booking/api');
+          const result = await purchaseGift(giftData);
 
           if (result.success) {
             this.showGiftConfirmation(result);
