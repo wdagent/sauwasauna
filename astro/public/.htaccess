@@ -85,9 +85,11 @@
     RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/(partners-hoteleros|hotel-partners|partenaires-hoteliers|socis-hotelers)(/|$) [NC]
     RewriteRule ^ - [L]
 
-    # Open days pages
-    RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/(puertas-abiertas|open-days|portes-ouvertes|portes-obertes)(/|$) [NC]
-    RewriteRule ^ - [L]
+    # WDA-CLEANUP: Redirect legacy "Open Days" URLs to correct dynamic routes (301 SEO)
+    RewriteRule ^es/puertas-abiertas/?$ /es/hotel-coma-bella/jornadas-de-puertas-abiertas-sauwa/ [R=301,L]
+    RewriteRule ^ca/portes-obertes/?$ /ca/hotel-coma-bella/jornadas-de-puertas-abiertas-sauwa/ [R=301,L]
+    RewriteRule ^en/open-days/?$ /en/hotel-coma-bella/jornadas-de-puertas-abiertas-sauwa/ [R=301,L]
+    RewriteRule ^fr/portes-ouvertes/?$ /fr/hotel-coma-bella/jornadas-de-puertas-abiertas-sauwa/ [R=301,L]
 
     # Dynamic pages themselves (don't rewrite the handlers)
     RewriteCond %{REQUEST_URI} ^/(es|ca|en|fr)/dynamic(/|$) [NC]
