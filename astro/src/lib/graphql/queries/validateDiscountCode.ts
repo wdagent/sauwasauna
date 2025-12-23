@@ -23,34 +23,30 @@ export type DiscountErrorType =
   | 'NETWORK_ERROR'
   | 'UNKNOWN_ERROR';
 
-/**
- * Discount code information from backend
- */
-export interface Discount {
-  code: string;
-  percentage: number;
-  validUntil: string;
-  usageLimit: number;
-  usageCount: number;
-  isActive: boolean;
-}
+// WDA-1023: Import Discount type from central types
+import type { Discount } from '../../../types/discount';
 
 /**
  * GraphQL response structure for validate discount code query
+ * WDA-1023: Updated to match backend SauwaDiscountCodeValidation type
  */
 export interface ValidateDiscountResponse {
   sauwaValidateDiscountCode: {
     valid: boolean;
-    message: string;
-    calculatedDiscount: number;
-    finalPriceCents: number;
+    reason: string;
+    calculatedDiscount: number | null;
+    finalPriceCents: number | null;
     discountCode: {
+      id: number;
       code: string;
-      percentage: number;
-      validUntil: string;
-      usageLimit: number;
-      usageCount: number;
-      isActive: boolean;
+      name: string;
+      discountType: 'percentage' | 'fixed';
+      discountValue: number;
+      maxUses: number | null;
+      currentUses: number;
+      validFrom: string | null;
+      validUntil: string | null;
+      status: 'active' | 'inactive' | 'expired';
     } | null;
   };
 }
@@ -78,16 +74,20 @@ export const VALIDATE_DISCOUNT_CODE_QUERY = `
       subtotalCents: $subtotalCents
     ) {
       valid
-      message
+      reason
       calculatedDiscount
       finalPriceCents
       discountCode {
+        id
         code
-        percentage
+        name
+        discountType
+        discountValue
+        maxUses
+        currentUses
+        validFrom
         validUntil
-        usageLimit
-        usageCount
-        isActive
+        status
       }
     }
   }
@@ -100,21 +100,27 @@ export const VALIDATE_DISCOUNT_CODE_QUERY = `
 /**
  * Map backend response to specific error type
  * Analyzes discountCode properties to determine exact error
+ * WDA-1023: Updated to use new backend field names
  */
 function mapToErrorType(
-  discountCode: ValidateDiscountResponse['sauwaValidateDiscountCode']['discountCode']
+  discountCode: ValidateDiscountResponse['sauwaValidateDiscountCode']['discountCode'],
+  reason?: string
 ): DiscountErrorType {
   // No discount code found
   if (!discountCode) {
     return 'INVALID_CODE';
   }
 
-  // Check if inactive
-  if (!discountCode.isActive) {
+  // Check status
+  if (discountCode.status === 'inactive') {
     return 'INACTIVE';
   }
 
-  // Check if expired (compare dates)
+  if (discountCode.status === 'expired') {
+    return 'EXPIRED';
+  }
+
+  // Check if expired (compare dates as backup)
   if (discountCode.validUntil) {
     const validUntilDate = new Date(discountCode.validUntil);
     const now = new Date();
@@ -125,8 +131,9 @@ function mapToErrorType(
 
   // Check if usage limit reached
   if (
-    discountCode.usageLimit > 0 &&
-    discountCode.usageCount >= discountCode.usageLimit
+    discountCode.maxUses !== null &&
+    discountCode.maxUses > 0 &&
+    discountCode.currentUses >= discountCode.maxUses
   ) {
     return 'NO_USES_LEFT';
   }
@@ -184,25 +191,26 @@ export async function validateDiscountCode(
         valid: true,
         discount: {
           code: result.discountCode.code,
-          percentage: result.discountCode.percentage,
+          type: result.discountCode.discountType,
+          amount: result.discountCode.discountValue,
           validUntil: result.discountCode.validUntil,
-          usageLimit: result.discountCode.usageLimit,
-          usageCount: result.discountCode.usageCount,
-          isActive: result.discountCode.isActive,
+          maxUses: result.discountCode.maxUses,
+          currentUses: result.discountCode.currentUses,
+          status: result.discountCode.status,
         },
-        calculatedDiscount: result.calculatedDiscount,
-        finalPriceCents: result.finalPriceCents,
-        message: result.message,
+        calculatedDiscount: result.calculatedDiscount ?? undefined,
+        finalPriceCents: result.finalPriceCents ?? undefined,
+        message: result.reason,
       };
     }
 
     // Validation failed - determine error type
-    const errorType = mapToErrorType(result.discountCode);
+    const errorType = mapToErrorType(result.discountCode, result.reason);
 
     return {
       valid: false,
       error: errorType,
-      message: result.message,
+      message: result.reason,
     };
   } catch (error) {
     clearTimeout(timeoutId);

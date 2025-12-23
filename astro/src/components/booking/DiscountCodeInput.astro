@@ -58,11 +58,6 @@ const t = translations[locale] || translations.es;
   data-session-price={sessionPrice}
   data-locale={locale}
 >
-  <label class="discount-label">
-    <span class="discount-icon" aria-hidden="true">&#127991;</span>
-    <span class="discount-label-text">{t.label}</span>
-  </label>
-
   <div class="discount-input-group" data-input-group>
     <input
       type="text"
@@ -102,26 +97,6 @@ const t = translations[locale] || translations.es;
     margin-bottom: var(--spacing-4);
   }
 
-  .discount-label {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    margin-bottom: var(--spacing-2);
-    font-family: var(--font-family-secondary);
-    font-size: var(--font-scale-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-bg-white);
-    cursor: default;
-  }
-
-  .discount-icon {
-    font-size: 1.125rem;
-  }
-
-  .discount-label-text {
-    opacity: 0.9;
-  }
-
   .discount-input-group {
     display: flex;
     gap: var(--spacing-2);
@@ -129,45 +104,39 @@ const t = translations[locale] || translations.es;
     transition: border-color var(--transition-base);
   }
 
+  /* Input: mismos estilos que BookingWidget .form-input */
   .discount-input {
     flex: 1;
     min-width: 0;
-    padding: var(--spacing-3) var(--spacing-4);
-    font-family: var(--font-family-secondary);
-    font-size: var(--font-scale-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--input-text);
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #111827;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    background-color: var(--input-bg);
-    border: var(--border-width-base) solid var(--input-border);
-    border-radius: var(--radius-base);
-    transition: all var(--transition-base);
-    min-height: var(--input-height);
+    letter-spacing: 0.05em;
   }
 
   .discount-input::placeholder {
-    color: var(--input-placeholder);
     text-transform: none;
     letter-spacing: normal;
-    font-weight: var(--font-weight-regular);
+    color: #9ca3af;
+    font-weight: 400;
   }
 
   .discount-input:focus {
     outline: none;
-    background-color: var(--input-bg-focus);
-    border-color: var(--color-info);
-  }
-
-  .discount-input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    border-color: #DB4529;
+    box-shadow: 0 0 0 3px rgba(219, 69, 41, 0.15);
   }
 
   /* Input states */
   .discount-input.input-typing {
     border-color: var(--color-info);
-    background-color: var(--input-bg-focus);
   }
 
   .discount-input.input-valid {
@@ -194,41 +163,35 @@ const t = translations[locale] || translations.es;
     animation: shake 0.5s ease-in-out;
   }
 
+  /* Boton: estilo secundario consistente con BookingWidget */
   .discount-apply-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 100px;
-    min-height: 44px;
-    padding: var(--spacing-3) var(--spacing-5);
-    font-family: var(--font-family-secondary);
-    font-size: var(--font-scale-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-bg-white);
-    background-color: var(--color-primary);
-    border: none;
-    border-radius: var(--radius-base);
+    flex-shrink: 0;
+    padding: 0.75rem 1.5rem;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #DB4529;
+    background: transparent;
+    border: 1px solid #DB4529;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition-base);
+    transition: all 0.2s ease;
     white-space: nowrap;
   }
 
   .discount-apply-btn:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-  }
-
-  .discount-apply-btn:focus {
-    outline: none;
-  }
-
-  .discount-apply-btn:focus-visible {
-    outline: 2px solid var(--color-bg-white);
-    outline-offset: 2px;
+    background: #DB4529;
+    color: white;
   }
 
   .discount-apply-btn:disabled {
-    opacity: var(--opacity-disabled);
+    opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .discount-apply-btn:focus-visible {
+    outline: 2px solid #DB4529;
+    outline-offset: 2px;
   }
 
   .btn-text,
@@ -309,7 +272,6 @@ const t = translations[locale] || translations.es;
 
     .discount-apply-btn {
       width: 100%;
-      min-height: 48px;
     }
   }
 </style>
@@ -357,7 +319,7 @@ const t = translations[locale] || translations.es;
     // Check if there's already an applied discount
     const initialDiscount = appliedDiscount.get();
     if (initialDiscount) {
-      showBadge(initialDiscount.code, initialDiscount.percentage);
+      showBadge(initialDiscount.code, initialDiscount.type, initialDiscount.amount);
       hideInput();
     }
 
@@ -376,7 +338,7 @@ const t = translations[locale] || translations.es;
 
     appliedDiscount.subscribe((discount) => {
       if (discount) {
-        showBadge(discount.code, discount.percentage);
+        showBadge(discount.code, discount.type, discount.amount);
         hideInput();
       } else {
         hideBadge();
@@ -427,17 +389,8 @@ const t = translations[locale] || translations.es;
         const result = await validateDiscountCode(code, sessionPrice);
 
         if (result.valid && result.discount) {
-          // Map response to store format
-          setValid({
-            id: result.discount.code,
-            code: result.discount.code,
-            percentage: result.discount.percentage,
-            valid_until: result.discount.validUntil,
-            usage_limit: result.discount.usageLimit,
-            usage_count: result.discount.usageCount,
-            is_active: result.discount.isActive,
-            one_per_user: false, // Default, backend doesn't return this
-          });
+          // WDA-1023: Pass discount directly - already in correct format from validateDiscountCode
+          setValid(result.discount);
         } else if (result.error) {
           // Map error type
           const errorType = mapErrorType(result.error);
@@ -530,13 +483,18 @@ const t = translations[locale] || translations.es;
       }
     }
 
-    function showBadge(code: string, percentage: number) {
+    function showBadge(code: string, type: 'percentage' | 'fixed', amount: number) {
+      // WDA-1023: Display discount based on type
+      const discountLabel = type === 'percentage'
+        ? `(${amount}% OFF)`
+        : `(-${amount.toFixed(2)}€)`;
+
       badgeContainer.innerHTML = `
         <div class="discount-badge" data-discount-badge>
           <div class="badge-content">
             <span class="badge-icon" aria-hidden="true">&#127991;</span>
             <span class="badge-code">${code}</span>
-            <span class="badge-percentage">(${percentage}% OFF)</span>
+            <span class="badge-percentage">${discountLabel}</span>
           </div>
           <button
             type="button"
@@ -561,7 +519,7 @@ const t = translations[locale] || translations.es;
           align-items: center;
           justify-content: space-between;
           gap: var(--spacing-3);
-          background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+          background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
           color: white;
           border-radius: 9999px;
           padding: 8px 16px;

@@ -304,6 +304,8 @@ export interface CreateBookingRequest {
   language?: string;
   /** WDA-1003: Flag indicating this is a voucher purchase (no date/time selection needed) */
   is_voucher_purchase?: boolean;
+  /** WDA-1023: Discount code to apply to the booking (validated before submission) */
+  discount_code?: string;
 }
 
 /**

@@ -65,23 +65,30 @@ export const discountError = atom<DiscountErrorType | null>(null);
 export const isDiscountApplied = computed(appliedDiscount, (discount) => discount !== null);
 
 /**
- * Current discount percentage (0 if no discount)
+ * Current discount amount (percentage or fixed value)
+ * WDA-1023: Updated to use new field name
  */
-export const discountPercentage = computed(appliedDiscount, (discount) => discount?.percentage ?? 0);
-
-/**
- * Whether the discount is one-time use per user
- */
-export const isOneTimeUse = computed(appliedDiscount, (discount) => discount?.one_per_user ?? false);
+export const discountPercentage = computed(appliedDiscount, (discount) => {
+  if (!discount) return 0;
+  // For percentage type, return the percentage; for fixed, return 0 (handled differently)
+  return discount.type === 'percentage' ? discount.amount : 0;
+});
 
 /**
  * Remaining uses for the discount code (null if unlimited)
+ * WDA-1023: Updated to use new field names
  */
 export const remainingUses = computed(appliedDiscount, (discount) => {
   if (!discount) return null;
-  if (discount.usage_limit === 0) return null; // 0 means unlimited
-  return discount.usage_limit - discount.usage_count;
+  if (discount.maxUses === null || discount.maxUses === 0) return null; // null/0 means unlimited
+  return discount.maxUses - discount.currentUses;
 });
+
+/**
+ * Whether the discount is one-time use (maxUses = 1)
+ * WDA-1023: Derived from maxUses instead of one_per_user
+ */
+export const isOneTimeUse = computed(appliedDiscount, (discount) => discount?.maxUses === 1);
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -89,12 +96,16 @@ export const remainingUses = computed(appliedDiscount, (discount) => {
 
 /**
  * Check if a discount has expired
+ * WDA-1023: Updated to use new field name validUntil
  * @param discount - The discount to check
- * @returns true if the discount is past its valid_until date
+ * @returns true if the discount is past its validUntil date or status is expired
  */
 function isDiscountExpired(discount: Discount): boolean {
-  if (!discount.valid_until) return false;
-  const expirationDate = new Date(discount.valid_until);
+  // Check status first
+  if (discount.status === 'expired' || discount.status === 'inactive') return true;
+  // Then check date
+  if (!discount.validUntil) return false;
+  const expirationDate = new Date(discount.validUntil);
   const now = new Date();
   return now > expirationDate;
 }
@@ -102,6 +113,7 @@ function isDiscountExpired(discount: Discount): boolean {
 /**
  * Calculate discount amount for a given session price
  * Returns a computed store that updates when discount changes
+ * WDA-1023: Updated to support both percentage and fixed discount types
  * @param sessionPrice - The base price of the session
  * @returns Computed store with discount calculation
  */
@@ -116,14 +128,25 @@ export function calculateDiscountAmount(sessionPrice: number) {
       };
     }
 
-    const discountAmount = Math.round((sessionPrice * discount.percentage) / 100 * 100) / 100;
+    let discountAmount: number;
+    let percentage: number;
+
+    if (discount.type === 'percentage') {
+      percentage = discount.amount;
+      discountAmount = Math.round((sessionPrice * discount.amount) / 100 * 100) / 100;
+    } else {
+      // Fixed amount discount
+      discountAmount = Math.min(discount.amount, sessionPrice); // Can't discount more than the price
+      percentage = sessionPrice > 0 ? Math.round((discountAmount / sessionPrice) * 100) : 0;
+    }
+
     const finalPrice = Math.round((sessionPrice - discountAmount) * 100) / 100;
 
     return {
       originalPrice: sessionPrice,
       discountAmount,
       finalPrice,
-      percentage: discount.percentage
+      percentage
     };
   });
 }
@@ -131,6 +154,7 @@ export function calculateDiscountAmount(sessionPrice: number) {
 /**
  * Get discount calculation for a specific price (non-reactive)
  * Use this when you need a one-time calculation, not a reactive value
+ * WDA-1023: Updated to support both percentage and fixed discount types
  * @param sessionPrice - The base price of the session
  * @returns Discount calculation object
  */
@@ -146,14 +170,25 @@ export function getDiscountCalculation(sessionPrice: number): DiscountCalculatio
     };
   }
 
-  const discountAmount = Math.round((sessionPrice * discount.percentage) / 100 * 100) / 100;
+  let discountAmount: number;
+  let percentage: number;
+
+  if (discount.type === 'percentage') {
+    percentage = discount.amount;
+    discountAmount = Math.round((sessionPrice * discount.amount) / 100 * 100) / 100;
+  } else {
+    // Fixed amount discount
+    discountAmount = Math.min(discount.amount, sessionPrice);
+    percentage = sessionPrice > 0 ? Math.round((discountAmount / sessionPrice) * 100) : 0;
+  }
+
   const finalPrice = Math.round((sessionPrice - discountAmount) * 100) / 100;
 
   return {
     originalPrice: sessionPrice,
     discountAmount,
     finalPrice,
-    percentage: discount.percentage
+    percentage
   };
 }
 

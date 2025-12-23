@@ -13,6 +13,7 @@
  */
 
 import { getLegalUrl } from '../../lib/wordpress/legal-slugs.js';
+import DiscountCodeInput from './DiscountCodeInput.astro';
 
 export interface Props {
   sessionId: number;
@@ -149,6 +150,11 @@ const translations = {
     giftNoSendMessage: 'El código de regalo te llegará a ti. Podrás entregarlo personalmente.',
     giftRecipientNameRequired: 'El nombre del destinatario es obligatorio',
     giftRecipientEmailRequired: 'El email del destinatario es obligatorio',
+    // WDA-1023: Discount codes
+    discountSection: '¿Tienes un código de descuento?',
+    originalPrice: 'Precio base',
+    discountApplied: 'Descuento aplicado',
+    totalPrice: 'Total a pagar',
   },
   ca: {
     selectDate: 'Selecciona una data',
@@ -266,6 +272,11 @@ const translations = {
     giftNoSendMessage: 'El codi de regal t\'arribarà a tu. Podràs entregar-lo personalment.',
     giftRecipientNameRequired: 'El nom del destinatari és obligatori',
     giftRecipientEmailRequired: 'L\'email del destinatari és obligatori',
+    // WDA-1023: Discount codes
+    discountSection: 'Tens un codi de descompte?',
+    originalPrice: 'Preu base',
+    discountApplied: 'Descompte aplicat',
+    totalPrice: 'Total a pagar',
   },
   en: {
     selectDate: 'Select a date',
@@ -383,6 +394,11 @@ const translations = {
     giftNoSendMessage: 'The gift code will be sent to you. You can deliver it personally.',
     giftRecipientNameRequired: 'Recipient name is required',
     giftRecipientEmailRequired: 'Recipient email is required',
+    // WDA-1023: Discount codes
+    discountSection: 'Do you have a discount code?',
+    originalPrice: 'Base price',
+    discountApplied: 'Discount applied',
+    totalPrice: 'Total to pay',
   },
   fr: {
     selectDate: 'Sélectionnez une date',
@@ -500,6 +516,11 @@ const translations = {
     giftNoSendMessage: 'Le code cadeau vous sera envoyé. Vous pourrez le remettre personnellement.',
     giftRecipientNameRequired: 'Le nom du destinataire est obligatoire',
     giftRecipientEmailRequired: 'L\'email du destinataire est obligatoire',
+    // WDA-1023: Discount codes
+    discountSection: 'Avez-vous un code de réduction?',
+    originalPrice: 'Prix de base',
+    discountApplied: 'Réduction appliquée',
+    totalPrice: 'Total à payer',
   },
 };
 
@@ -922,6 +943,27 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           </span>
         </label>
         <span class="form-error hidden">{t.termsRequired}</span>
+      </div>
+
+      <!-- WDA-1023: Discount Code Section -->
+      <div class="discount-code-wrapper" data-discount-wrapper>
+        <DiscountCodeInput sessionPrice={0} locale={locale} />
+      </div>
+
+      <!-- WDA-1023: Price Summary -->
+      <div class="price-summary" data-price-summary>
+        <div class="price-row">
+          <span class="price-label">{t.originalPrice}</span>
+          <span class="price-value" data-original-price>-</span>
+        </div>
+        <div class="price-row discount-row hidden" data-discount-row>
+          <span class="price-label discount-label">{t.discountApplied}</span>
+          <span class="price-value discount-value" data-discount-amount>-</span>
+        </div>
+        <div class="price-row total-row">
+          <span class="price-label">{t.totalPrice}</span>
+          <span class="price-value total-value" data-final-price>-</span>
+        </div>
       </div>
 
       <!-- Submit Button -->
@@ -2512,6 +2554,94 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
       transition: none;
     }
   }
+
+  /* ===========================================
+     WDA-1023: DISCOUNT CODE STYLES
+     =========================================== */
+
+  .discount-code-wrapper {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-accent, #f8f9fa);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+  }
+
+  .price-summary {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: var(--bg-primary, #fff);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+  }
+
+  .price-row.hidden {
+    display: none;
+  }
+
+  .price-row:not(:last-child) {
+    border-bottom: 1px dashed var(--border-color, #e5e7eb);
+  }
+
+  .price-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary, #6b7280);
+  }
+
+  .price-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary, #1f2937);
+  }
+
+  .discount-row .discount-label {
+    color: var(--color-success, #16a34a);
+  }
+
+  .discount-row .discount-value {
+    color: var(--color-success, #16a34a);
+    font-weight: 600;
+  }
+
+  .total-row .price-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+  }
+
+  .total-row .total-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-primary, #d4a574);
+  }
+
+  @media (max-width: 640px) {
+    .discount-code-wrapper,
+    .price-summary {
+      padding: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .price-label,
+    .price-value {
+      font-size: 0.8125rem;
+    }
+
+    .total-row .price-label {
+      font-size: 0.9375rem;
+    }
+
+    .total-row .total-value {
+      font-size: 1rem;
+    }
+  }
 </style>
 
 <script>
@@ -2535,6 +2665,12 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     CreateBookingRequest,
     DeliveryOption,
   } from '../../lib/booking';
+  // WDA-1023: Discount store imports
+  import {
+    appliedDiscount,
+    clearDiscount,
+  } from '../../stores';
+  import type { Discount } from '../../types/discount';
 
   interface WidgetState {
     sessionId: number;
@@ -2556,6 +2692,8 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
     includedPersons: number | null;
     // WDA-1008: Voucher validity from backend (also used for gift)
     voucherValidityMonths: number;
+    // WDA-1023: Session price for discount calculations
+    sessionPrice: number;
   }
 
   class BookingWidgetController {
@@ -2582,7 +2720,12 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         includedPersons: null,
         // WDA-1008: Default voucher validity (also used for gift)
         voucherValidityMonths: 12,
+        // WDA-1023: Session price for discount calculations
+        sessionPrice: 0,
       };
+
+      // WDA-1023: Subscribe to discount store changes
+      this.subscribeToDiscountStore();
 
       this.init();
     }
@@ -2706,6 +2849,7 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
                     sessionType
                     includedPersons
                     voucherValidityMonths
+                    sessionPrice
                   }
                 }
               }
@@ -2724,9 +2868,13 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
           this.state.includedPersons = sessionDetails.includedPersons || null;
           // WDA-1008: Store voucher validity months for display (also used for gift)
           this.state.voucherValidityMonths = sessionDetails.voucherValidityMonths || 12;
+          // WDA-1023: Store session price for discount calculations
+          this.state.sessionPrice = sessionDetails.sessionPrice || 0;
 
           // Update UI based on session type
           this.updateSessionTypeUI();
+          // WDA-1023: Initialize price summary
+          this.updatePriceSummary(null);
         }
       } catch (error) {
         console.error('[BookingWidget] Error loading session type:', error);
@@ -3475,6 +3623,8 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
       if (countEl) {
         countEl.innerHTML = `${this.state.attendeeCount}/<span class="max-attendees">${this.state.maxCapacity}</span>`;
       }
+      // WDA-1023: Update price summary when attendee count changes
+      this.updatePriceSummary(appliedDiscount.get());
     }
 
     private updateAddAttendeeButton(): void {
@@ -3683,6 +3833,10 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         return;
       }
 
+      // WDA-1023: Get discount code if applied (from appliedDiscount, not the input field)
+      const currentDiscount = appliedDiscount.get();
+      const discountCode = currentDiscount?.code || undefined;
+
       const bookingData: CreateBookingRequest = {
         session_id: this.state.sessionId,
         // For vouchers: placeholder date/time (actual redemption date chosen later)
@@ -3696,12 +3850,16 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
         language: language, // WDA-941: ES, CA, EN, FR
         // WDA-1003: Mark as voucher purchase for backend to generate voucher codes
         is_voucher_purchase: isVoucherPurchase,
+        // WDA-1023: Include discount code if validated
+        discount_code: discountCode,
       };
 
       try {
         const result = await createBooking(bookingData);
 
         if (result.success) {
+          // WDA-1023: Clear discount after successful booking
+          clearDiscount();
           this.showConfirmation(result);
         } else {
           // WDA-921: Check for rate limit error
@@ -4101,11 +4259,76 @@ const uniqueId = `booking-${sessionId}-${Date.now()}`;
       }, 100);
     }
 
+    // =========================================
+    // WDA-1023: DISCOUNT CODE INTEGRATION
+    // =========================================
+
+    private subscribeToDiscountStore(): void {
+      // Subscribe to discount store changes
+      appliedDiscount.subscribe((discount) => {
+        this.updatePriceSummary(discount);
+      });
+    }
+
+    private updatePriceSummary(discount: Discount | null): void {
+      const priceSummary = this.widget.querySelector('[data-price-summary]');
+      if (!priceSummary) return;
+
+      const originalPriceEl = priceSummary.querySelector('[data-original-price]');
+      const discountRow = priceSummary.querySelector('[data-discount-row]');
+      const discountAmountEl = priceSummary.querySelector('[data-discount-amount]');
+      const finalPriceEl = priceSummary.querySelector('[data-final-price]');
+
+      // Get base price: session price * attendee count
+      const basePrice = this.state.sessionPrice * Math.max(1, this.state.attendeeCount);
+
+      // Format currency
+      const formatCurrency = (amount: number) => `${amount.toFixed(2)} €`;
+
+      // Update original price
+      if (originalPriceEl) {
+        originalPriceEl.textContent = formatCurrency(basePrice);
+      }
+
+      // Handle discount
+      if (discount && discount.code) {
+        const discountAmount = discount.type === 'percentage'
+          ? (basePrice * discount.amount / 100)
+          : Math.min(discount.amount, basePrice);
+        const finalPrice = basePrice - discountAmount;
+
+        // Show discount row
+        discountRow?.classList.remove('hidden');
+
+        // Update discount amount with label
+        if (discountAmountEl) {
+          const discountLabel = discount.type === 'percentage'
+            ? `-${discount.amount}%`
+            : `-${formatCurrency(discount.amount)}`;
+          discountAmountEl.textContent = `${discountLabel} (${formatCurrency(discountAmount)})`;
+        }
+
+        // Update final price
+        if (finalPriceEl) {
+          finalPriceEl.textContent = formatCurrency(finalPrice);
+        }
+      } else {
+        // Hide discount row, show base price as total
+        discountRow?.classList.add('hidden');
+        if (finalPriceEl) {
+          finalPriceEl.textContent = formatCurrency(basePrice);
+        }
+      }
+    }
+
     private resetWidget(): void {
       // Reset state
       this.state.selectedDate = null;
       this.state.daySlots = [];
       this.state.selectedSlot = null;
+
+      // WDA-1023: Clear any applied discount
+      clearDiscount();
 
       // Reset form
       const form = this.widget.querySelector('.booking-form') as HTMLFormElement;
